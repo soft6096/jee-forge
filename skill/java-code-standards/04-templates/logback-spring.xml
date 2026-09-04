@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Logback 配置模板（resources/logback-spring.xml）。
+  三件套必配：CONSOLE（控制台）+ FILE（滚动文件）+ 环境级 level（springProfile）。
+  规范出处：00-common/04-logging-standards.md 第 1.5 节。
+  注意：必须用 logback-spring.xml 命名（-spring 后缀才支持 <springProfile>）。
+-->
+<configuration>
+
+    <!-- 控制台 Appender：dev 全量输出（含 DEBUG），格式化含时间/级别/线程/logger/消息 -->
+    <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder>
+            <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{50} - %msg%n</pattern>
+            <charset>UTF-8</charset>
+        </encoder>
+    </appender>
+
+    <!-- 滚动文件 Appender：按天滚动 + 大小触发 + 保留 30 天，生产日志必须落盘 -->
+    <appender name="FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>${LOG_PATH:-logs}/app.log</file>
+        <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
+            <fileNamePattern>${LOG_PATH:-logs}/app.%d{yyyy-MM-dd}.%i.log</fileNamePattern>
+            <maxFileSize>100MB</maxFileSize>
+            <maxHistory>30</maxHistory>
+        </rollingPolicy>
+        <encoder>
+            <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{50} - %msg%n</pattern>
+            <charset>UTF-8</charset>
+        </encoder>
+    </appender>
+
+    <!-- 环境级 level：dev 开 DEBUG，online/qa 只 INFO（按项目实际环境调整） -->
+    <springProfile name="dev">
+        <logger name="com.example" level="DEBUG"/>
+    </springProfile>
+    <springProfile name="qa,online">
+        <logger name="com.example" level="INFO"/>
+    </springProfile>
+
+    <root level="INFO">
+        <appender-ref ref="CONSOLE"/>
+        <appender-ref ref="FILE"/>
+    </root>
+
+</configuration>
