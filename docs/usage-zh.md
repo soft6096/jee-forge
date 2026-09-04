@@ -18,7 +18,7 @@ jee-forge 把约束拆成 8 个**按需加载**的技能（Skill），各管一�
 
 | skill | 管什么 | 你这样说就会触发 |
 |---|---|---|
-| `ai-dev-workflow` | 完整开发流程（5 步 + 15 命令 + 18 模板） | "按流程开发 XX 模块" |
+| `ai-dev-workflow` | 完整开发流程（0.x 前置 + 1.1~5.3 五步） | "按流程开发 XX 模块" |
 | `java-code-standards` | Java 代码规范（19 类类规范 + 安全/分布式/性能） | "写个接口 / 写个 Controller / 帮我写段代码" |
 | `comment-standards` | 注释规范 + 存量补注释 | "给 XX 模块补注释" |
 | `database-standards` | SQL / 建表 / 索引 / 分页 / MyBatis-Plus | "写个 SQL / 建张表" |

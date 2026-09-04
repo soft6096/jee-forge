@@ -22,7 +22,7 @@
 
 | skill | 职责 | 典型触发说法 | 备注 |
 |---|---|---|---|
-| [`skill/ai-dev-workflow`](skill/ai-dev-workflow) | 完整开发流程：0.0/0.5/0.8 → 1.1~5.3，15 个命令 + 18 份产物模板 | "按流程开发 XX 模块" | 流程编排中枢 |
+| [`skill/ai-dev-workflow`](skill/ai-dev-workflow) | 完整开发流程：0.x 前置（0.0/0.5/0.8/0.9 需求入口整形）+ 1.1~5.3 五步，命令 + 产物模板 | "按流程开发 XX 模块" | 流程编排中枢 |
 | [`skill/java-code-standards`](skill/java-code-standards) | Java 代码规范引擎：19 类类规范 + 安全/分布式/性能/模板/示例 | "写个接口/Controller/Service" | Spring Boot + MyBatis-Plus 生态 |
 | [`skill/comment-standards`](skill/comment-standards) | 全量注释规范 + 存量代码补注释工作流 | "给 XX 模块补注释" | 任何语言通用，Java 示例 |
 | [`skill/database-standards`](skill/database-standards) | SQL / 表设计 / 索引 / 分页 / 反模式 / MyBatis-Plus | "写个 SQL/建张表" | MySQL |
@@ -85,7 +85,7 @@ jee-forge/
 ├── COPYRIGHT.md            # 仓库级版权合规说明（第三方参考源对照）
 ├── install.sh              # 多 Agent 一键分发脚本
 └── skill/
-    ├── ai-dev-workflow/        # 流程 skill：SKILL.md + commands/(15) + templates/(18) + docs/
+    ├── ai-dev-workflow/        # 流程 skill：SKILL.md + commands/ + templates/ + docs/
     ├── java-code-standards/    # 代码规范：SKILL.md + 00-common/ + 01-java/ + 03-performance/ + 04-templates/ + 05-examples/
     ├── comment-standards/      # 注释规范：SKILL.md + standards/
     ├── database-standards/     # SQL 规范：SKILL.md + standards/ + mybatis-plus/
