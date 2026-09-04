@@ -2,6 +2,8 @@
 
 > Java/AI 工程开发的"规范锻造炉"——把 AI 辅助开发所需的**流程、规范、测试、核对**整合为一套可安装的 Skill 家族，让 AI 生成的代码"规范、不跑偏、可维护"。
 
+> 📘 中文使用指南见 [`docs/usage-zh.md`](docs/usage-zh.md)（含各工具安装细节、生效确认方法与 FAQ）。
+
 **English:** jee-forge is a family of 8 Agent Skills (SKILL.md-based) for Java/Spring backend development powered by AI agents. One repo, eight skills — install once, use in any agent that supports skills (Claude Code / opencode / Codex / Cursor / CodeBuddy …).
 
 ---
