@@ -20,16 +20,20 @@ AI 生成注释常见问题：类/字段/方法注释漏写、@param 只重复�
 
 | skill | 关系 |
 |---|---|
-| [java-code-standards](https://github.com/soft6096/java-code-standards) | Java 代码规范引用本 skill 的注释规范 |
-| [ai-dev-workflow](https://github.com/soft6096/ai-dev-workflow) | 开发流程引用本 skill 注释规范，gen-comments 命令 = 本 skill 存量补注释工作流 |
-| [database-standards](https://github.com/soft6096/database-standards) | SQL 规范，无注释内容 |
+| [java-code-standards](https://github.com/soft6096/jee-forge/tree/main/skill/java-code-standards) | Java 代码规范引用本 skill 的注释规范 |
+| [ai-dev-workflow](https://github.com/soft6096/jee-forge/tree/main/skill/ai-dev-workflow) | 开发流程引用本 skill 注释规范，gen-comments 命令 = 本 skill 存量补注释工作流 |
+| [database-standards](https://github.com/soft6096/jee-forge/tree/main/skill/database-standards) | SQL 规范，无注释内容 |
 
 ## 安装
 
+本技能是 [jee-forge](https://github.com/soft6096/jee-forge) 技能家族成员（单仓库 8 个技能）。安装任选其一：
+
 ```bash
-git clone git@github.com:soft6096/comment-standards.git ~/.agents/skills/comment-standards
-# 或 opencode 用户目录
-git clone git@github.com:soft6096/comment-standards.git ~/.agents/skills/comment-standards
+# 方式一：整仓 clone（opencode/Codex 支持 skill/<name> 嵌套识别，更新 = git pull）
+git clone git@github.com:soft6096/jee-forge.git ~/.agents/skills/jee-forge
+
+# 方式二：只装本技能到你的 agent 技能目录（Claude Code：~/.claude/skills/；opencode：~/.agents/skills/）
+git clone git@github.com:soft6096/jee-forge.git /tmp/jee-forge && cp -r /tmp/jee-forge/skill/comment-standards ~/.agents/skills/comment-standards
 ```
 
 ## 使用

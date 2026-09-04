@@ -61,7 +61,7 @@
     └── crud-example.md             # CRUD 完整示例
 ```
 
-> **数据库相关规范已迁移至 [database-standards](https://github.com/soft6096/database-standards)**：SQL 编写、表设计、索引、分页、查询反模式、数据安全（通用层）+ MyBatis-Plus Mapper/XML/分页示例（MyBatis-Plus 层）。本 skill 专注 Java 代码规范。
+> **数据库相关规范已迁移至 [database-standards](https://github.com/soft6096/jee-forge/tree/main/skill/database-standards)**：SQL 编写、表设计、索引、分页、查询反模式、数据安全（通用层）+ MyBatis-Plus Mapper/XML/分页示例（MyBatis-Plus 层）。本 skill 专注 Java 代码规范。
 
 ## 使用方式（AI 加载矩阵）
 

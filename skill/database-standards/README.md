@@ -27,24 +27,22 @@ AI 生成 SQL 常见问题：N+1 查询、SELECT *、索引失效写法、深分
 ## 与 java-code-standards 的关系
 
 - **database-standards** = 数据库规范（本仓库，含 MyBatis-Plus 层）
-- **java-code-standards** = Java 代码规范（[GitHub](https://github.com/soft6096/java-code-standards)，Controller/Service/Entity 等 Java 类规范）
+- **java-code-standards** = Java 代码规范（[GitHub](https://github.com/soft6096/jee-forge/tree/main/skill/java-code-standards)，Controller/Service/Entity 等 Java 类规范）
 - 写 MyBatis Mapper 接口：接口结构看 java-code-standards `01-java/mapper-standards.md`，数据访问规则看本仓库 `mybatis-plus/mapper-standards.md`
 
 ## 安装
 
-### Claude Code / opencode 等 agent（从 GitHub 安装）
+本技能是 [jee-forge](https://github.com/soft6096/jee-forge) 技能家族成员（单仓库 8 个技能）。安装任选其一：
 
 ```bash
-# 方式一：git clone 到 skills 目录
-git clone git@github.com:soft6096/database-standards.git ~/.claude/skills/database-standards
+# 方式一：整仓 clone（opencode/Codex 支持 skill/<name> 嵌套识别，更新 = git pull）
+git clone git@github.com:soft6096/jee-forge.git ~/.agents/skills/jee-forge
 
-# 或 opencode 用户目录
-git clone git@github.com:soft6096/database-standards.git ~/.agents/skills/database-standards
+# 方式二：只装本技能到你的 agent 技能目录（Claude Code：~/.claude/skills/；opencode：~/.agents/skills/）
+git clone git@github.com:soft6096/jee-forge.git /tmp/jee-forge && cp -r /tmp/jee-forge/skill/database-standards ~/.agents/skills/database-standards
 ```
 
-### 手动
-
-下载仓库，把 `database-standards` 目录放入你的 agent skills 目录（Claude Code：`~/.claude/skills/`；opencode：`~/.agents/skills/` 或 `~/.config/opencode/skills/`）。
+> 手动方式：从 GitHub 下载 jee-forge 仓库，把 `skill/database-standards` 目录放入你的 agent skills 目录（Claude Code：`~/.claude/skills/`；opencode：`~/.agents/skills/` 或 `~/.config/opencode/skills/`）。
 
 ## 使用
 

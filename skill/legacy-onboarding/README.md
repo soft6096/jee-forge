@@ -25,12 +25,12 @@
 
 | skill | 关系 |
 |---|---|
-| [ai-dev-workflow](https://github.com/soft6096/ai-dev-workflow) | 本 skill 管**完整接入**（8 维度体检 + A/B/C 分级整改）；ai-dev-workflow **0.5 存量代码扫描**管**轻量迭代**（聚焦老项目约定 + 优化决策闸门，可跳过优化，二选一）。接入完成后回到其「开发场景判定」继续：新项目→0.0；老代码迭代→0.5；已接入规范→1.1 |
-| [java-code-standards](https://github.com/soft6096/java-code-standards) | 配置基线（application-config）/代码基线/安全基线引用 |
-| [database-standards](https://github.com/soft6096/database-standards) | 数据基线（schema 一致性/字符集/索引）引用 |
-| [build-standards](https://github.com/soft6096/build-standards) | 工程基线（依赖/驱动版本/模块）引用 |
-| [test-standards](https://github.com/soft6096/test-standards) | 测试基线引用 |
-| [comment-standards](https://github.com/soft6096/comment-standards) | 注释基线（存量补注释工作流）引用 |
+| [ai-dev-workflow](https://github.com/soft6096/jee-forge/tree/main/skill/ai-dev-workflow) | 本 skill 管**完整接入**（8 维度体检 + A/B/C 分级整改）；ai-dev-workflow **0.5 存量代码扫描**管**轻量迭代**（聚焦老项目约定 + 优化决策闸门，可跳过优化，二选一）。接入完成后回到其「开发场景判定」继续：新项目→0.0；老代码迭代→0.5；已接入规范→1.1 |
+| [java-code-standards](https://github.com/soft6096/jee-forge/tree/main/skill/java-code-standards) | 配置基线（application-config）/代码基线/安全基线引用 |
+| [database-standards](https://github.com/soft6096/jee-forge/tree/main/skill/database-standards) | 数据基线（schema 一致性/字符集/索引）引用 |
+| [build-standards](https://github.com/soft6096/jee-forge/tree/main/skill/build-standards) | 工程基线（依赖/驱动版本/模块）引用 |
+| [test-standards](https://github.com/soft6096/jee-forge/tree/main/skill/test-standards) | 测试基线引用 |
+| [comment-standards](https://github.com/soft6096/jee-forge/tree/main/skill/comment-standards) | 注释基线（存量补注释工作流）引用 |
 
 ## 使用
 

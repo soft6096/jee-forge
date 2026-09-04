@@ -58,13 +58,13 @@ cp -r check-standards ~/.claude/skills/
 
 | skill | 职责 |
 |---|---|
-| [ai-dev-workflow](https://github.com/soft6096/ai-dev-workflow) | 流程编排（需求→方案→任务→验收），5.2 规范核对节点调用本 skill |
-| [java-code-standards](https://github.com/soft6096/java-code-standards) | Java 代码规范（本 skill 核对项的规范出处） |
-| [comment-standards](https://github.com/soft6096/comment-standards) | 注释规范（全量注释含 private/抽取方法） |
-| [database-standards](https://github.com/soft6096/database-standards) | SQL/表/索引规范 |
-| [build-standards](https://github.com/soft6096/build-standards) | 构建/依赖规范 |
-| [test-standards](https://github.com/soft6096/test-standards) | 测试规范 |
-| [legacy-onboarding](https://github.com/soft6096/legacy-onboarding) | 存量项目接入 |
+| [ai-dev-workflow](https://github.com/soft6096/jee-forge/tree/main/skill/ai-dev-workflow) | 流程编排（需求→方案→任务→验收），5.2 规范核对节点调用本 skill |
+| [java-code-standards](https://github.com/soft6096/jee-forge/tree/main/skill/java-code-standards) | Java 代码规范（本 skill 核对项的规范出处） |
+| [comment-standards](https://github.com/soft6096/jee-forge/tree/main/skill/comment-standards) | 注释规范（全量注释含 private/抽取方法） |
+| [database-standards](https://github.com/soft6096/jee-forge/tree/main/skill/database-standards) | SQL/表/索引规范 |
+| [build-standards](https://github.com/soft6096/jee-forge/tree/main/skill/build-standards) | 构建/依赖规范 |
+| [test-standards](https://github.com/soft6096/jee-forge/tree/main/skill/test-standards) | 测试规范 |
+| [legacy-onboarding](https://github.com/soft6096/jee-forge/tree/main/skill/legacy-onboarding) | 存量项目接入 |
 
 ## License
 

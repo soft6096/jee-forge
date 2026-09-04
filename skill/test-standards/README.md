@@ -19,15 +19,21 @@ AI 生成测试常见问题：只测合法路径、断言实现细节、测试�
 
 | skill | 关系 |
 |---|---|
-| [ai-dev-workflow](https://github.com/soft6096/ai-dev-workflow) | 4.2 契约测试流程引用本 skill 的 contract-test-standards |
-| [java-code-standards](https://github.com/soft6096/java-code-standards) | Java 代码规范引用本 skill |
-| [database-standards](https://github.com/soft6096/database-standards) | SQL 规范，无直接引用 |
-| [comment-standards](https://github.com/soft6096/comment-standards) | 注释规范，无直接引用 |
+| [ai-dev-workflow](https://github.com/soft6096/jee-forge/tree/main/skill/ai-dev-workflow) | 4.2 契约测试流程引用本 skill 的 contract-test-standards |
+| [java-code-standards](https://github.com/soft6096/jee-forge/tree/main/skill/java-code-standards) | Java 代码规范引用本 skill |
+| [database-standards](https://github.com/soft6096/jee-forge/tree/main/skill/database-standards) | SQL 规范，无直接引用 |
+| [comment-standards](https://github.com/soft6096/jee-forge/tree/main/skill/comment-standards) | 注释规范，无直接引用 |
 
 ## 安装
 
+本技能是 [jee-forge](https://github.com/soft6096/jee-forge) 技能家族成员（单仓库 8 个技能）。安装任选其一：
+
 ```bash
-git clone git@github.com:soft6096/test-standards.git ~/.agents/skills/test-standards
+# 方式一：整仓 clone（opencode/Codex 支持 skill/<name> 嵌套识别，更新 = git pull）
+git clone git@github.com:soft6096/jee-forge.git ~/.agents/skills/jee-forge
+
+# 方式二：只装本技能到你的 agent 技能目录（Claude Code：~/.claude/skills/；opencode：~/.agents/skills/）
+git clone git@github.com:soft6096/jee-forge.git /tmp/jee-forge && cp -r /tmp/jee-forge/skill/test-standards ~/.agents/skills/test-standards
 ```
 
 ## 使用
