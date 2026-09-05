@@ -89,6 +89,13 @@ git -C <你的 jee-forge 副本路径> pull          # 整仓 clone 方式
 **Q6：为什么叫"规范"而不是"规则"？**
 每个技能 = 规范文本 + 反例/正例 + 自检清单，设计成"AI 能逐条对照检查"的形式，而不是模棱两可的建议。
 
+**Q7：斜杠命令（`/jee-forge`、`/feature-list`）敲不出来 / 没补全，是没装好吗？**
+不是。触发方式有两种，**跨工具通用的是自然语言**：
+- **自然语言触发（所有工具通用，推荐）**：直接说"按流程开发 XX 模块"、"用 jee-forge 开发 XX 模块"、"按 ai-dev-workflow 流程开发 XX 模块"、"写个 XX 接口"、"继续 XX 模块"等，即可触发对应技能——Claude Code / CodeBuddy / Codex / opencode 全部支持；
+- **斜杠命令触发（取决于工具）**：Claude Code / CodeBuddy 会把技能内 `commands/*.md` 注册为 `/命令`；opencode 目前只识别 `SKILL.md`，`commands/` 内文件不注册为斜杠命令——此时敲 `/feature-list` 无补全属正常，AI 会自动读取命令文件按同样流程执行，效果等价。
+
+在 opencode 下请用自然语言触发，不要据此判断安装失败——生效确认见第四节。
+
 ## 六、技能家族关系图
 
 ```
