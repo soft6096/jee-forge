@@ -35,7 +35,7 @@
 > 扫描深度按项目规模调节：小项目（<50 文件）全量扫；大项目按模块抽样 + 全局 grep 兜底（硬编码密钥/SQL 拼接这类安全项必须全量 grep）。
 
 > [!IMPORTANT] 数据基线必扫「同表重复映射」（同表唯一映射规则，源头治理）
-> `grep -rhn '@TableName("…")' src/main/java` 统计**每张表的映射 Entity 清单**——同一表名出现 >1 个 Entity（如 `MallProduct` 与 `MallServiceProduct` 都映射 `mall_product`）即**重复映射**（B 类整改：无引用类删除、双引用类收敛合并，字段命名差异经 `@TableField` 映射统一，不另建 Entity）。体检报告记录表→Entity 清单，作为后续开发"新建 Entity 前查重"的基线（见 java-code-standards `entity-standards.md` §1）。
+> `grep -rhn '@TableName("…")' src/main/java` 统计**每张表的映射 Entity 清单**——同一表名出现 >1 个 Entity（如 `MallProduct` 与 `MallServiceProduct` 都映射 `mall_product`）即**重复映射**（B 类整改：无引用类删除、双引用类收敛合并，字段命名差异经 `@TableField` 映射统一，不另建 Entity）。体检报告记录表→Entity 清单，作为后续开发"新建 Entity 前查重"的基线（见 java-code-standards `01-java/entity-standards.md` §1）。
 
 ### 3. 分级汇总（A / B / C）
 

@@ -83,7 +83,7 @@ mvn dependency:tree -Dincludes=com.google.guava
 
 ### 4.6 接口文档依赖（springdoc / knife4j，接口项目必配）
 
-- **Controller 接口项目必须引入 springdoc-openapi**（OpenAPI 注解 `@Tag`/`@Operation`/`@Schema` 依赖它才生效，见 java-code-standards api-doc-standards.md）；版本由 Spring Boot BOM 管理，不手写版本号
+- **Controller 接口项目必须引入 springdoc-openapi**（OpenAPI 注解 `@Tag`/`@Operation`/`@Schema` 依赖它才生效，见 java-code-standards `01-java/api-doc-standards.md`）；版本由 Spring Boot BOM 管理，不手写版本号
 
 ```xml
 <!-- ✅ Spring Boot 3.x：官方 starter（含 swagger-ui），版本由 BOM 管理 -->
@@ -105,13 +105,13 @@ mvn dependency:tree -Dincludes=com.google.guava
 </dependency>
 ```
 
-- 文档开关按环境配置：`springdoc.api-docs.enabled` dev/qa 开、online 关（见 java-code-standards api-doc-standards.md）
+- 文档开关按环境配置：`springdoc.api-docs.enabled` dev/qa 开、online 关（见 java-code-standards `01-java/api-doc-standards.md`）
 - 纯内部/无 HTTP 接口的模块（如仅 Job/Listener 的 service 模块）不需要该依赖
 
 ### 4.7 日志依赖（logback，默认即有，禁重复引）
 
 - **Spring Boot 默认 Logback**（`spring-boot-starter-logging` 随 `spring-boot-starter-web` 传递引入），**无需也不应额外加 logback 依赖**——重复显式引 logback-classic 可能版本冲突
-- 项目必须提供 `resources/logback-spring.xml` 自定义配置（控制台 + 滚动文件 + 环境级 level，见 java-code-standards 04-logging-standards.md 与 `04-templates/logback-spring.xml`）
+- 项目必须提供 `resources/logback-spring.xml` 自定义配置（控制台 + 滚动文件 + 环境级 level，见 java-code-standards `00-common/04-logging-standards.md` 与 `04-templates/logback-spring.xml`）
 - 仅当团队明确改用 **Log4j2**：`spring-boot-starter-web`（或 `spring-boot-starter`）排除 `spring-boot-starter-logging`，再显式引 `spring-boot-starter-log4j2`；**Logback 与 Log4j2 禁止并存**（ClassLoader 里两个日志实现，输出混乱）
 
 ```xml

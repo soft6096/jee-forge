@@ -60,7 +60,7 @@ CREATE TABLE `t_order` (
 
 - MySQL 8 服务器默认字符集即 utf8mb4，但显式声明防止部署环境差异（老实例默认 latin1/utf8mb3 时中文/emoji 乱码）
 - 排序规则统一 `utf8mb4_general_ci` 或 `utf8mb4_0900_ai_ci`（MySQL 8 默认），全库一致，避免 JOIN 排序规则冲突
-- 连接侧字符集（JDBC URL）见 java-code-standards `application-config-standards.md`：**不要在 URL 写 `characterEncoding=utf8mb4`**（Connector/J 8.x 报 Unsupported character encoding）
+- 连接侧字符集（JDBC URL）见 java-code-standards `01-java/application-config-standards.md`：**不要在 URL 写 `characterEncoding=utf8mb4`**（Connector/J 8.x 报 Unsupported character encoding）
 
 ### 3.6 表结构与代码一致性（schema 与 Entity 强一致）
 
