@@ -2,7 +2,7 @@
 
 > Java/AI 工程开发的"规范锻造炉"——把 AI 辅助开发所需的**流程、规范、测试、核对**整合为一套可安装的 Skill 家族，让 AI 生成的代码"规范、不跑偏、可维护"。
 
-**English:** jee-forge is a family of 8 Agent Skills (SKILL.md-based) for AI-driven Java/Spring backend development. One repo, eight skills — install once, use in any agent that supports skills (Claude Code / opencode / Codex / Cursor / CodeBuddy …). The flagship skill `ai-dev-workflow` runs a full SDD/TDD pipeline from requirement to acceptance; the other 7 skills provide on-demand code standards and a final check gate.
+**English:** jee-forge is a family of 9 Agent Skills (SKILL.md-based) for AI-driven Java/Spring backend development. One repo, nine skills — install once, use in any agent that supports skills (Claude Code / opencode / Codex / Cursor / CodeBuddy …). The flagship skill `ai-dev-workflow` runs a full SDD/TDD pipeline from requirement to acceptance; the other 8 skills provide code standards, a bug-fix discipline and a final check gate.
 
 > 📘 中文使用指南（含各工具安装细节、生效确认与 FAQ）见 [`docs/usage-zh.md`](docs/usage-zh.md)。
 
@@ -42,7 +42,7 @@ cd jee-forge
 
 ## 为什么需要这套技能家族
 
-直接丢给 AI 一句提示词让它写代码，结果往往是：代码能跑但没人敢维护、接口悄悄偏离设计、SQL 没索引、注释稀疏、测试从零开始。这 8 个技能把 AI 编码约束成一条**分工明确、按需加载**的流水线：
+直接丢给 AI 一句提示词让它写代码，结果往往是：代码能跑但没人敢维护、接口悄悄偏离设计、SQL 没索引、注释稀疏、测试从零开始。这 9 个技能把 AI 编码约束成一条**分工明确、按需加载**的流水线：
 
 - **流程管"怎么走"**：需求 → 方案 → 任务 → 契约测试 → 编码 → 核对 → 验收（ai-dev-workflow）
 - **规范管"长什么样"**：代码 / 注释 / SQL / 构建 / 测试 各自成域，谁写谁加载
@@ -50,11 +50,12 @@ cd jee-forge
 
 技能间**不冲突**：每个技能一个独立目录、靠任务描述自动触发、按需加载——单个编码会话只叠加与当前任务匹配的规范，防止规范挤占编码上下文。
 
-## Skill 家族一览（8 个）
+## Skill 家族一览（9 个）
 
 | skill | 类型 | 职责 | 典型触发说法 |
 |---|---|---|---|
-| [`ai-dev-workflow`](skill/ai-dev-workflow) | 流程 | 完整开发流程（0.x 前置 + 1.1~5.3 五步 + 17 命令 + 20 模板） | `/jee-forge XX 模块` / "按流程开发 XX 模块" |
+| [`ai-dev-workflow`](skill/ai-dev-workflow) | 流程 | 完整开发流程（0.x 前置 + 1.1~5.3 五步 + 18 命令 + 21 模板） | `/jee-forge XX 模块` / "按流程开发 XX 模块" |
+| [`bugfix-workflow`](skill/bugfix-workflow) | 流程 | 缺陷修复纪律：复现→assess 根因→最小修复→防回归测试→兜底核对 | `/bugfix` / "这个 bug 帮我修" |
 | [`java-code-standards`](skill/java-code-standards) | 代码规范 | Java 代码规范引擎（19 类规范 + 安全/分布式/性能/模板/示例） | "写个接口/写 Controller/写 Service" |
 | [`comment-standards`](skill/comment-standards) | 注释规范 | 全量注释规范 + 存量代码补注释工作流 | "给 XX 模块补注释" |
 | [`database-standards`](skill/database-standards) | SQL 规范 | SQL / 表设计 / 索引 / 分页 / 反模式 / MyBatis-Plus | "写个 SQL" / "建张表" |
@@ -63,7 +64,7 @@ cd jee-forge
 | [`legacy-onboarding`](skill/legacy-onboarding) | 存量接入 | 存量项目体检与规范接入（8 维度 + A/B/C 分级整改） | "老项目接入规范" / "扫描这个项目" |
 | [`check-standards`](skill/check-standards) | 兜底核对 | 代码交付前核对（33 项 + 证据 + 报告 + 确认闸门） | "/check-standards" / "对 xx 跑 check-standards" |
 
-**依赖关系**：`ai-dev-workflow` 编排流程并挂载各规范技能；`java-code-standards` 引用 comment/database/test/build；`check-standards` 的核对项覆盖其余全部技能；`legacy-onboarding` 体检时按 8 维度聚合加载各规范。合并为单仓库后**一体安装、引用不悬空**。
+**依赖关系**：`ai-dev-workflow` 编排流程并挂载各规范技能；`java-code-standards` 引用 comment/database/test/build；`check-standards` 的核对项覆盖其余全部技能；`legacy-onboarding` 体检时按 8 维度聚合加载各规范；`bugfix-workflow` 处理缺陷修复并引用 ai-dev-workflow（产物同步）/check-standards（兜底）。合并为单仓库后**一体安装、引用不悬空**。
 
 ## 技能结构与命令结构
 
@@ -72,7 +73,7 @@ cd jee-forge
 每个技能 = 一个自包含目录（`skill/<name>/`），入口统一为 `SKILL.md`：
 
 - `SKILL.md` 顶部 frontmatter 的 `name` + `description` 决定 Agent 何时加载它（触发）；正文是加载后 AI 遵循的规则/加载矩阵。
-- 命令型技能把斜杠命令放在自己的 `commands/`（文件名 = 命令名）；文档型技能把规范拆在 `standards/` 或按主题分子目录；**当前 8 个技能中只有 `ai-dev-workflow` 有 commands/（命令集中在流程技能，其余靠自动触发，无需命令）。**
+- 命令型技能把斜杠命令放在自己的 `commands/`（文件名 = 命令名）；文档型技能把规范拆在 `standards/` 或按主题分子目录；**当前 9 个技能中 `ai-dev-workflow`（18 命令）与 `bugfix-workflow`（/bugfix）带 commands/，其余规范技能靠自动触发，无需命令。**
 
 ### 仓库目录树
 
@@ -82,9 +83,10 @@ jee-forge/
 └── skill/
     ├── ai-dev-workflow/          # ★ 流程技能（唯一命令型）
     │   ├── SKILL.md              # 流程总纲：场景判定/触发矩阵/闸门/硬性约束
-    │   ├── commands/             # 17 个斜杠命令（见下节命令表）
-    │   ├── templates/            # 20 份中间产物空白模板（0.0~5.3 + req-intake）
+    │   ├── commands/             # 18 个斜杠命令（见下节命令表）
+    │   ├── templates/            # 21 份中间产物空白模板（0.0~5.3 + req-intake + 00-进度）
     │   └── docs/                 # 方法论文档（流程总览 / Spec-Coding / Vibe 对比）
+    ├── bugfix-workflow/          # 缺陷修复纪律：SKILL.md + commands/bugfix.md + templates/bugfix-修复单.md
     ├── java-code-standards/      # 代码规范引擎
     │   ├── SKILL.md + README.md + COPYRIGHT.md
     │   ├── 00-common/            # 全量必读公共规范（命名/日志/异常/公共组件等）
@@ -102,11 +104,12 @@ jee-forge/
 
 > 各技能内部结构各不相同（有 `standards/`、按主题子目录、或单文件内联）是刻意保留——每份 `SKILL.md` 的"加载矩阵"写死了自己的规范路径，统一目录反而会破坏引用与按需加载。
 
-### ai-dev-workflow 命令结构（17 个斜杠命令）
+### ai-dev-workflow 命令结构（18 个斜杠命令）
 
 | 命令 | 归属 | 作用 |
 |---|---|---|
 | `/jee-forge` | 总入口 | 一键完整流程：场景判定 →（大/跨栈需求走 `/req-intake`）→ 五步或轻量模式 |
+| `/progress` | 进度/接续 | 读取/更新模块 `00-进度.md`，报告每步状态与断点并从断点续跑（跨会话/换人接手先 `/progress`，禁止从 1.1 重跑） |
 | `/0.0-项目初始化` | 0.0 | 脚手架 10 项硬检查（防"启动即炸"，从零建工程必做） |
 | `/legacy-scan` | 0.5 | 存量代码扫描与约束适配（老代码迭代必做，含"是否优化存量"决策闸门） |
 | `/change-impact` | 0.8 | 迭代变更影响分析（同模块已有产物改逻辑/迭代必做：定位旧产物→变更映射→产物同步计划，人确认） |
@@ -123,6 +126,8 @@ jee-forge/
 | `/accept` | 5.3 | 验收报告（前置检查 5.2 报告存在性；含 quickstart 调通证据） |
 | `/gen-comments` | 附加 | 存量代码补注释 |
 | `/gen-logs` | 附加 | 存量代码补全/完善日志 |
+
+> `/bugfix` 命令位于 **bugfix-workflow** skill 内（`skill/bugfix-workflow/commands/bugfix.md`），不在 ai-dev-workflow 命令表中。
 
 ## ai-dev-workflow 完整流程
 
@@ -240,7 +245,7 @@ jee-forge/
 
 ## 规范类技能与核对技能怎么用
 
-除流程外，其余 7 个技能均为"自动触发"型：Agent 按任务描述匹配 `description` 自动加载对应技能，无需命令。覆盖的触发面：
+除 `ai-dev-workflow` / `bugfix-workflow` 两个流程型技能外，其余 7 个规范/核对技能均为"自动触发"型：Agent 按任务描述匹配 `description` 自动加载对应技能，无需命令。覆盖的触发面：
 
 | 想写什么 | Agent 会自动加载 |
 |---|---|
@@ -251,6 +256,7 @@ jee-forge/
 | 单元/契约测试 | test-standards |
 | 老项目体检/接入 | legacy-onboarding（建议配合 ai-dev-workflow 0.5 使用） |
 | 交付前兜底核对 | check-standards（可由 `/check-standards` 或自然语言触发） |
+| 修复已有代码 bug | bugfix-workflow（/bugfix：复现→根因→最小修复→防回归→兜底） |
 
 ## 安装
 
@@ -291,12 +297,13 @@ cp -r skill/* <你的技能目录>/   # 或只装需要的某几个
 | 直接写码（轻量） | "写个 XX 接口" / "实现 XX 功能" |
 | 写 SQL / 建表 | "写个 SQL" / "建张表" |
 | 补注释 / 补日志 | "给 XX 模块补注释" |
+| 修 bug | "这个 bug 帮我修"（加载 bugfix-workflow，`/bugfix`；涉及需求/产物变更先走流程 0.8） |
 | 老项目接规范 | "把这个老项目接入规范体系" |
 | 交付前兜底核对 | "对 src/main/java 跑 check-standards" |
 
 ## 仓库由来与维护
 
-- 本仓库由 8 个独立技能仓库聚合而来（ai-dev-workflow / build-standards / java-code-standards / comment-standards / database-standards / test-standards / legacy-onboarding / check-standards）。原仓库内容原样保留为各 `skill/<name>/`，技能名、触发词、内部相对路径均未改动，**用法与单独安装完全一致**。
+- 本仓库由 8 个独立技能仓库聚合而来（ai-dev-workflow / build-standards / java-code-standards / comment-standards / database-standards / test-standards / legacy-onboarding / check-standards），并新增 `bugfix-workflow` 作为家族第 9 技能（缺陷修复纪律）。原仓库内容原样保留为各 `skill/<name>/`，技能名、触发词、内部相对路径均未改动，**用法与单独安装完全一致**。
 - 价值：跨技能一致的规范变更（如"同表唯一映射"需同步到 java-code-standards + database-standards + legacy-onboarding + check-standards）从"4 个仓库各提交一次"收敛为**单仓库一次 commit 原子落地**。
 - 新增技能：在 `skill/` 下新建 `skill/<新技能名>/SKILL.md`（自包含）即可被扫描识别，无需改动其它技能。
 - 发布：本仓库同时是"规范技能集"与"流程技能"的单一事实源；本地以 `docs/<模块名>V<版本>-<时间戳>/` 落盘中间产物。

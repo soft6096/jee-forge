@@ -8,17 +8,18 @@
 
 直接丢给 AI 一句提示词让它写代码，常见翻车：代码能跑但没人敢维护、接口悄悄偏离设计、SQL 没索引、注释稀疏、测试从零写起。
 
-jee-forge 把约束拆成 8 个**按需加载**的技能（Skill），各管一段：
+jee-forge 把约束拆成 9 个**按需加载**的技能（Skill），各管一段：
 
 - **流程**：AI 怎么走（需求 → 方案 → 任务 → 测试 → 编码 → 核对 → 验收）
 - **规范**：产物长什么样（代码 / 注释 / SQL / 构建 / 测试）
 - **核对**：交付前兜底（逐项 grep/ast-grep 扫描，附「文件:行号」证据）
 
-## 二、8 个技能与触发说法
+## 二、9 个技能与触发说法
 
 | skill | 管什么 | 你这样说就会触发 |
 |---|---|---|
 | `ai-dev-workflow` | 完整开发流程（0.x 前置 + 1.1~5.3 五步） | `/jee-forge XX 模块` 或 "按流程开发 XX 模块" |
+| `bugfix-workflow` | 缺陷修复纪律（复现→根因→最小修复→防回归→兜底） | `/bugfix` 或 "这个 bug 帮我修" |
 | `java-code-standards` | Java 代码规范（19 类类规范 + 安全/分布式/性能） | "写个接口 / 写个 Controller / 帮我写段代码" |
 | `comment-standards` | 注释规范 + 存量补注释 | "给 XX 模块补注释" |
 | `database-standards` | SQL / 建表 / 索引 / 分页 / MyBatis-Plus | "写个 SQL / 建张表" |
@@ -34,7 +35,7 @@ jee-forge 把约束拆成 8 个**按需加载**的技能（Skill），各管一�
 ```bash
 git clone git@github.com:soft6096/jee-forge.git
 cd jee-forge
-./install.sh          # 自动检测本机已装的 agent 技能目录并复制 8 个技能
+./install.sh          # 自动检测本机已装的 agent 技能目录并复制 9 个技能
 ./install.sh --list   # 先看会装到哪
 ```
 
@@ -70,11 +71,11 @@ cp -r skill/comment-standards ~/.claude/skills/
 **Q1：装好了但 Agent 好像没触发技能？**
 先确认：技能目录结构对不对（SKILL.md 必须存在）；会话是否新开；工具是否支持该技能目录位置（opencode 用 `~/.agents/skills/`，Claude Code 用 `~/.claude/skills/`，别放错）；部分工具不跟随 symlink——本仓库安装一律用**复制**不用软链。
 
-**Q2：8 个技能会互相冲突吗？会不会一次全加载、挤爆上下文？**
-不会。每个技能一个独立目录、由任务的 description 触发，**只加载与当前任务匹配的规范**。写 SQL 只触发 database-standards，不会把 java/comment 全拉进来。各技能内部还写了 WHEN NOT 边界，避免多 skill 规则叠加。
+**Q2：9 个技能会互相冲突吗？会不会一次全加载、挤爆上下文？**
+不会。每个技能一个独立目录、由任务的 description 触发，**只加载与当前任务匹配的规范**。写 SQL 只触发 database-standards，不会把 java/comment 全拉进来；修 bug 触发 bugfix-workflow、新功能触发 ai-dev-workflow。各技能内部还写了 WHEN NOT 边界，避免多 skill 规则叠加。
 
 **Q3：技能里的路径引用（如 `standards/sql-standards.md`）合仓后还有效吗？**
-有效。这类引用是"技能内部相对路径"，随整个技能目录搬移保持不变；技能间引用按**技能名**（如"加载 check-standards"），与仓库形态无关。合仓后 8 个技能一体安装，引用更不会悬空。
+有效。这类引用是"技能内部相对路径"，随整个技能目录搬移保持不变；技能间引用按**技能名**（如"加载 check-standards"），与仓库形态无关。合仓后 9 个技能一体安装，引用更不会悬空。
 
 **Q4：以后规范更新怎么更？**
 ```bash
@@ -91,8 +92,9 @@ git -C <你的 jee-forge 副本路径> pull          # 整仓 clone 方式
 ## 六、技能家族关系图
 
 ```
-legacy-onboarding ──体检存量项目────┐
-ai-dev-workflow ──流程编排─────────┤   → 8 维度扫描 / 产物模板 / 场景判定
+legacy-onboarding ──体检存量项目──────┐
+ai-dev-workflow ──流程编排───────────┤   → 8 维度扫描 / 产物模板 / 场景判定
+bugfix-workflow ──缺陷修复纪律────────┘   → /bugfix：复现→根因→最小修复→防回归
   │  0.5 / 4.2 契约测试 / 5.1 编码
   ▼
 java-code-standards  ←→ comment-standards（注释）
