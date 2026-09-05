@@ -1,6 +1,6 @@
 ---
 name: java-code-standards
-description: Java 代码生成规范引擎，约束 AI 生成代码质量（Spring Boot + Spring + MyBatis-Plus 生态）。**只要产出/修改 Java 代码就必须加载本 skill——包括不走完整开发流程的零散请求（"写个 XX 接口"/"写个 Controller"/"帮我写这段代码"/"实现这个功能"）：任何 Java 代码产物在返回用户前，本 skill 与 comment-standards 都必须已加载**——命名/分层/异常/日志/事务/注入/SQL/安全是硬性要求，生成物不符合即返工。写 Controller/Service/ServiceImpl/Mapper/Entity/DTO/VO/Config/Utils/Exception/Enum/Constants/Converter/Validator/Security/Listener/Job 等类时按生成目标加载 01-java 对应规范；代码注释规则见 comment-standards skill（**未加注释 = 代码未完成，不得交付**）；涉及 SQL/表设计/索引/MyBatis XML/分页时加载 database-standards skill（通用 SQL + MyBatis-Plus 层）；写测试代码时加载 test-standards skill；构建配置（pom/依赖/模块）时加载 build-standards skill；性能敏感/并发/缓存代码加载 03-performance 规范；生成完整类时参考 04-templates 模板。触发场景：生成 Java 代码、写 Java 类、Spring Boot 接口、MyBatis-Plus Mapper、SQL/建表 DDL、分页查询、认证鉴权、定时任务、消息消费、代码规范审查、**没有需求文档/不走流程的直接写码请求**。WHEN NOT（不要因这些场景触发本 skill）：纯 SQL/DDL/索引任务 → 只加载 database-standards；纯注释补全/审查 → 只加载 comment-standards；纯测试代码 → 只加载 test-standards；纯 pom/依赖/构建配置 → 只加载 build-standards——本 skill 不重复定义这些领域，避免多 skill 规则叠加冲突挤占编码上下文。代码生成完成后的兜底核对见 check-standards skill（全部核对项，含方法级注释/日志全覆盖）。
+description: Java 代码生成规范引擎，约束 AI 生成代码质量（Spring Boot + Spring + MyBatis-Plus 生态）。**只要产出/修改 Java 代码就必须加载本 skill，包括零散直接写码请求（"写个 XX 接口"/"写个 Controller"/"帮我写这段代码"/"实现这个功能"）；任何 Java 代码产物交付前，本 skill 与 comment-standards 都必须已加载**——命名/分层/异常/日志/事务/注入/SQL/安全是硬性要求，生成物不符合即返工。写 Controller/Service/ServiceImpl/Mapper/Entity/DTO/VO/Config/Utils/Exception/Enum/Constants/Converter/Validator/Security/Listener/Job 等类时按生成目标加载 01-java 对应规范；注释规则见 comment-standards skill（**未加注释 = 代码未完成，不得交付**）；涉及 SQL/表设计/索引/MyBatis XML/分页 → database-standards（通用 SQL + MyBatis-Plus 层）；测试代码 → test-standards；构建配置（pom/依赖/模块）→ build-standards；性能/并发/缓存 → 03-performance 规范；完整类 → 04-templates 模板。触发场景：生成 Java 代码、写 Java 类、Spring Boot 接口、MyBatis-Plus Mapper、SQL/建表 DDL、分页查询、认证鉴权、定时任务、消息消费、代码规范审查、无需求文档直接写码请求。WHEN NOT（不要因这些场景触发本 skill）：纯 SQL/DDL/索引 → 只 database-standards；纯注释补全/审查 → 只 comment-standards；纯测试代码 → 只 test-standards；纯 pom/依赖/构建 → 只 build-standards——本 skill 不重复定义，避免多 skill 规则叠加挤占上下文。代码完成后兜底核对见 check-standards（全部核对项，含方法级注释/日志全覆盖）。
 ---
 
 # Java Code Standards
@@ -28,21 +28,21 @@ description: Java 代码生成规范引擎，约束 AI 生成代码质量（Spri
 | 写 Service 接口 | `00-common/*` + `01-java/service-standards.md` | exception / enum |
 | 写 Service 实现 | `00-common/*` + `01-java/service-impl-standards.md` | exception / enum |
 | 写 Mapper | `00-common/*` + `01-java/mapper-standards.md`（接口结构） | database-standards `mybatis-plus/mapper-standards.md` |
-| 写 Entity | `00-common/*` + `01-java/entity-standards.md` | database-standards `table-design-standards.md` |
+| 写 Entity | `00-common/*` + `01-java/entity-standards.md` | database-standards `standards/table-design-standards.md` |
 | 写 DTO / VO | `00-common/*` + 对应类规范 + `01-java/api-doc-standards.md`（字段 @Schema 强制） | converter |
 | 写 Config / Utils / Enum / Constants 等 | `00-common/*` + 对应类规范 | - |
 | 写 application.yml / 配置文件 / 连接池 | `01-java/application-config-standards.md` | config-standards |
-| 生成项目脚手架 / 工程初始化（配置 + 公共组件） | build-standards + `01-java/application-config-standards.md` + `04-templates/`（ConfigTemplate / MyMetaObjectHandler） | database-standards `table-design-standards.md` |
+| 生成项目脚手架 / 工程初始化（配置 + 公共组件） | build-standards + `01-java/application-config-standards.md` + `04-templates/`（ConfigTemplate / MyMetaObjectHandler） | database-standards `standards/table-design-standards.md` |
 | 认证鉴权 / 安全 | `01-java/security-standards.md` | controller-standards |
-| 写 Listener（MQ 消费） | `01-java/listener-standards.md` | database-standards `pagination-standards.md` |
+| 写 Listener（MQ 消费） | `01-java/listener-standards.md` | database-standards `standards/pagination-standards.md` |
 | 写 Job（定时任务） | `01-java/job-standards.md` | concurrency |
 | 接口文档（OpenAPI/knife4j） | `01-java/api-doc-standards.md` | controller-standards |
 | 分布式（锁/幂等/事务） | `01-java/distributed-standards.md` | concurrency / caching |
 | 写 pom / 加依赖 / 模块结构 | build-standards（全部） | - |
-| 写测试代码 | test-standards `unit-test-standards.md` + `contract-test-standards.md` | test-standards `test-data-standards.md` |
-| 写 SQL / 建表 DDL | database-standards `sql-standards.md` + `table-design-standards.md` + `index-standards.md` | database-standards `pagination-standards.md` |
-| 写 MyBatis XML | database-standards `mybatis-plus/mybatis-xml-standards.md` | database-standards `sql-standards.md` / `pagination-standards.md` |
-| 分页查询 | database-standards `pagination-standards.md` + `mybatis-plus/pagination-example.md` | database-standards `index-standards.md` |
+| 写测试代码 | test-standards `standards/unit-test-standards.md` + `contract-test-standards.md` | test-standards `standards/test-data-standards.md` |
+| 写 SQL / 建表 DDL | database-standards `standards/sql-standards.md` + `table-design-standards.md` + `index-standards.md` | database-standards `standards/pagination-standards.md` |
+| 写 MyBatis XML | database-standards `mybatis-plus/mybatis-xml-standards.md` | database-standards `standards/sql-standards.md` / `pagination-standards.md` |
+| 分页查询 | database-standards `standards/pagination-standards.md` + `mybatis-plus/pagination-example.md` | database-standards `standards/index-standards.md` |
 | 性能敏感代码 | `00-common/*` + `03-performance/performance-standards.md` | concurrency / caching |
 | 并发 / 锁 | `03-performance/concurrency-standards.md` | - |
 | 缓存 (Redis/Caffeine) | `03-performance/caching-standards.md` | - |
