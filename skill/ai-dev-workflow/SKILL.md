@@ -1,6 +1,6 @@
 ---
 name: ai-dev-workflow
-description: Use when the user wants to develop a Java backend feature — 覆盖三类场景：① 完整 spec 驱动流程（按流程开发/按规格开发/生成功能清单/写技术方案/拆任务/契约测试/AI 编码收敛）；② 轻量模式（写个接口/写 Controller/Service/ServiceImpl/实现功能/新增接口/改功能），直接"加载规范 → 写码(全注释+全日志) → check-standards 兜底"；③ **同模块已有历史产物时的迭代/改逻辑（把 XX 逻辑改一下/调整 XX 功能/在 XX 模块上新增个 XX）→ 必须先 0.8 /change-impact 定位旧产物、变更映射、产物同步计划（人确认）→ 从源头 1.1 同步产物 → 再写码，禁止直接改码/禁止用轻量模式绕过产物同步**。**用户没有需求文档/不走完整流程、只是直接要求写代码（写个接口/写个 Controller/改段代码/实现个功能）时，自动按轻量模式执行：加载规范 skill → 全量注释+全量日志写码 → check-standards 兜底——不得因"没走流程"而跳过注释/日志/核对；但改逻辑前先 `ls docs/` 查该模块是否已有历史产物，有 → 先走 0.8**。Triggers on phrases like "按流程开发 XX 模块", "从需求到代码", "写个 XX 接口", "实现 XX 功能", "写 Controller/Service", "新增 XX 接口", "把 XX 逻辑改一下", "调整 XX 功能", "在 XX 模块上改". Applies to Java service projects (Controller/Listener/Job) and similar layered backends.
+description: Use when the user wants to develop a Java backend feature — 覆盖三类场景：① 完整 spec 驱动流程（按流程开发/按规格开发/生成功能清单/写技术方案/拆任务/契约测试/AI 编码收敛）；② 轻量模式（写个接口/写 Controller/Service/ServiceImpl/实现功能/新增接口/改功能），直接"加载规范 → 写码(全注释+全日志) → check-standards 兜底"；③ **同模块已有历史产物时的迭代/改逻辑（把 XX 逻辑改一下/调整 XX 功能/在 XX 模块上新增个 XX）→ 必须先 0.8 /change-impact 定位旧产物、变更映射、产物同步计划（人确认）→ 从源头 1.1 同步产物 → 再写码，禁止直接改码/禁止用轻量模式绕过产物同步**。**用户没有需求文档/不走完整流程、只是直接要求写代码（写个接口/写个 Controller/改段代码/实现个功能）时，自动按轻量模式执行：加载规范 skill → 全量注释+全量日志写码 → check-standards 兜底——不得因"没走流程"而跳过注释/日志/核对；但改逻辑前先 `ls docs/` 查该模块是否已有历史产物，有 → 先走 0.8**。Triggers on phrases like "按流程开发 XX 模块", "从需求到代码", "写个 XX 接口", "实现 XX 功能", "写 Controller/Service", "新增 XX 接口", "把 XX 逻辑改一下", "调整 XX 功能", "在 XX 模块上改". Applies to Java service projects (Controller/Listener/Job) and similar layered backends. 续跑/接续触发："继续 XX 模块" / "继续 XX 模块的需求" / "继续上次中断的任务" / "接着上次" → 命中后先按「产物进度与接续断点」章节执行 /progress 逻辑从断点续跑（禁止从 1.1 重跑）。
 ---
 
 # AI 开发完整流程（需求 → 上线）
@@ -220,6 +220,7 @@ src/
 - 在 1.1 `/feature-list` 创建模块版本目录时**同步创建**（模板 `templates/00-进度.md`）；
 - 每个中间产物**经人确认后同步更新**对应步骤行状态（只允许 `✅ 已确认` / `🔲 待办` / `⏸ 当前断点`，禁止另造状态值）；
 - **跨会话 / 换人接手必须先 `/progress`**：读 00-进度.md → 报告断点 → 从断点续跑，**禁止从 1.1 重跑**（流程产物 + 人工闸门可被机器化接续，但每次续跑仍遵守对应步骤的确认闸门）。
+- **自然语言续跑入口**：用户说「继续订单模块」「继续订单模块的需求」「继续上次中断的任务」「接着上次」等 → 一律按本机制处理：AI 收到此类意图即执行 /progress 逻辑（定位模块 → 读 00-进度.md → 报告断点 → 从断点续跑）。
 
 ## 中间产物确认闸门（强制，所有步骤适用）
 
