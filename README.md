@@ -309,6 +309,7 @@ cp -r skill/* <你的技能目录>/   # 或只装需要的某几个
 - 价值：跨技能一致的规范变更（如"同表唯一映射"需同步到 java-code-standards + database-standards + legacy-onboarding + check-standards）从"4 个仓库各提交一次"收敛为**单仓库一次 commit 原子落地**。
 - 新增技能：在 `skill/` 下新建 `skill/<新技能名>/SKILL.md`（自包含）即可被扫描识别，无需改动其它技能。
 - 发布：本仓库同时是"规范技能集"与"流程技能"的单一事实源；本地以 `docs/<模块名>V<版本>-<时间戳>/` 落盘中间产物。
+- 经验回流：使用者把项目 `docs/experience.md` 使用总结按 [`docs/experience-contributing.md`](docs/experience-contributing.md) 交回维护者，评审后固化为对应规范/核对项随版本发布（避免同坑多用户反复踩）。
 
 ## License
 
