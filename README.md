@@ -25,7 +25,7 @@
 ```bash
 git clone git@github.com:soft6096/jee-forge.git
 cd jee-forge
-./install.sh          # 自动检测本机 agent 技能目录并安装 8 个技能（也可 --tool claude / --list 先看）
+./install.sh          # 自动检测本机 agent 技能目录并安装 9 个技能（也可 --tool claude / --list 先看）
 ```
 
 安装后新开会话，对你的 Agent 说：
@@ -54,7 +54,7 @@ cd jee-forge
 
 | skill | 类型 | 职责 | 典型触发说法 |
 |---|---|---|---|
-| [`ai-dev-workflow`](skill/ai-dev-workflow) | 流程 | 完整开发流程（0.x 前置 + 1.1~5.3 五步 + 18 命令 + 21 模板） | `/jee-forge XX 模块` / "按流程开发 XX 模块" |
+| [`ai-dev-workflow`](skill/ai-dev-workflow) | 流程 | 完整开发流程（0.x 前置 + 1.1~5.3 五步 + 18 命令 + 22 模板） | `/jee-forge XX 模块` / "按流程开发 XX 模块" |
 | [`bugfix-workflow`](skill/bugfix-workflow) | 流程 | 缺陷修复纪律：复现→assess 根因→最小修复→防回归测试→兜底核对 | `/bugfix` / "这个 bug 帮我修" |
 | [`java-code-standards`](skill/java-code-standards) | 代码规范 | Java 代码规范引擎（19 类规范 + 安全/分布式/性能/模板/示例） | "写个接口/写 Controller/写 Service" |
 | [`comment-standards`](skill/comment-standards) | 注释规范 | 全量注释规范 + 存量代码补注释工作流 | "给 XX 模块补注释" |
@@ -84,7 +84,7 @@ jee-forge/
     ├── ai-dev-workflow/          # ★ 流程技能（唯一命令型）
     │   ├── SKILL.md              # 流程总纲：场景判定/触发矩阵/闸门/硬性约束
     │   ├── commands/             # 18 个斜杠命令（见下节命令表）
-    │   ├── templates/            # 21 份中间产物空白模板（0.0~5.3 + req-intake + 通用-模块进度与断点）
+    │   ├── templates/            # 22 份中间产物空白模板（0.0~5.3 + req-intake + 通用-模块进度与断点）
     │   └── docs/                 # 方法论文档（流程总览 / Spec-Coding / Vibe 对比）
     ├── bugfix-workflow/          # 缺陷修复纪律：SKILL.md + commands/bugfix.md + templates/bugfix-修复单.md
     ├── java-code-standards/      # 代码规范引擎
@@ -275,7 +275,7 @@ git clone git@github.com:soft6096/jee-forge.git ~/.agents/skills/jee-forge
 ### 方式二：一键分发脚本（Claude Code / CodeBuddy 等一级目录工具）
 
 ```bash
-./install.sh                # 自动检测已装技能目录并安装 8 个技能
+./install.sh                # 自动检测已装技能目录并安装 9 个技能
 ./install.sh --tool claude  # 只装到 ~/.claude/skills
 ./install.sh --list         # 先看会装到哪里
 ./install.sh --force        # 覆盖已存在副本（先自动备份）

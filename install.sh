@@ -2,7 +2,7 @@
 # =============================================================================
 # jee-forge 技能分发安装脚本
 #
-# 作用：把本仓库 skill/ 下的 8 个 Agent Skill 分发安装到本机已检测到的
+# 作用：把本仓库 skill/ 下的 9 个 Agent Skill 分发安装到本机已检测到的
 #       Agent 技能目录，供不同编程 Agent（Claude Code / opencode / Codex /
 #       CodeBuddy 等）使用。
 #

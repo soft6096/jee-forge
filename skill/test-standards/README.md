@@ -26,7 +26,7 @@ AI 生成测试常见问题：只测合法路径、断言实现细节、测试�
 
 ## 安装
 
-本技能是 [jee-forge](https://github.com/soft6096/jee-forge) 技能家族成员（单仓库 8 个技能）。安装任选其一：
+本技能是 [jee-forge](https://github.com/soft6096/jee-forge) 技能家族成员（单仓库 9 个技能）。安装任选其一：
 
 ```bash
 # 方式一：整仓 clone（opencode/Codex 支持 skill/<name> 嵌套识别，更新 = git pull）
