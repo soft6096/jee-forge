@@ -39,9 +39,9 @@ description: Java 代码生成规范引擎，约束 AI 生成代码质量（Spri
 | 接口文档（OpenAPI/knife4j） | `01-java/api-doc-standards.md` | controller-standards |
 | 分布式（锁/幂等/事务） | `01-java/distributed-standards.md` | concurrency / caching |
 | 写 pom / 加依赖 / 模块结构 | build-standards（全部） | - |
-| 写测试代码 | test-standards `standards/unit-test-standards.md` + `contract-test-standards.md` | test-standards `standards/test-data-standards.md` |
-| 写 SQL / 建表 DDL | database-standards `standards/sql-standards.md` + `table-design-standards.md` + `index-standards.md` | database-standards `standards/pagination-standards.md` |
-| 写 MyBatis XML | database-standards `mybatis-plus/mybatis-xml-standards.md` | database-standards `standards/sql-standards.md` / `pagination-standards.md` |
+| 写测试代码 | test-standards `standards/unit-test-standards.md` + `standards/contract-test-standards.md` | test-standards `standards/test-data-standards.md` |
+| 写 SQL / 建表 DDL | database-standards `standards/sql-standards.md` + `standards/table-design-standards.md` + `standards/index-standards.md` | database-standards `standards/pagination-standards.md` |
+| 写 MyBatis XML | database-standards `mybatis-plus/mybatis-xml-standards.md` | database-standards `standards/sql-standards.md` / `standards/pagination-standards.md` |
 | 分页查询 | database-standards `standards/pagination-standards.md` + `mybatis-plus/pagination-example.md` | database-standards `standards/index-standards.md` |
 | 性能敏感代码 | `00-common/*` + `03-performance/performance-standards.md` | concurrency / caching |
 | 并发 / 锁 | `03-performance/concurrency-standards.md` | - |

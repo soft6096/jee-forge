@@ -7,7 +7,7 @@
 ## 0. 变更前：定位与映射（先搜，后动手）
 
 - [ ] **归属定位**：这条规则属于哪个技能？（现有 9 技能无法容纳 → 说明可能该新建技能，先与维护者确认，不随手塞进现有技能）
-- [ ] **引用方扫描**：`search_content` 搜新/改规则关键词，找出所有提及处：各 SKILL.md 触发矩阵、README 技能表/命令表、docs/usage-zh.md、docs/流程总览.md、legacy-onboarding 8 维度清单、experience 固化目标。**未扫完不下结论。**
+- [ ] **引用方扫描**：`search_content` 搜新/改规则关键词，找出所有提及处：各 SKILL.md 触发矩阵、README 技能表/命令表、docs/usage-zh.md、skill/ai-dev-workflow/docs/流程总览.md、legacy-onboarding 8 维度清单、experience 固化目标。**未扫完不下结论。**
 
 ## 1. 变更中：逐项核对（每一项都要能答"改 / 不改 / 明确不改的原因"）
 
@@ -15,10 +15,10 @@
 - [ ] 归属技能是否唯一？是否与相邻技能规则冲突（先搜同名/同义规则，如"唯一索引"同时出现在 java-code-standards / database-standards，改动需同步两处）
 - [ ] **rule 可分三态**：硬规则（可 grep/ast-grep 判定）→ 必须配核对项（见 C）；软取向（判不了对错）→ 明确放"软取向/背景约定"层，不写进硬性约束与核对项；原则说明（方法论文档）→ 只改 docs，不进核对
 - [ ] 改动是否影响"存量适配模式"（0.5/2.1-存量适配）？老项目对齐场景是否要豁免或需同步表述
-- [ ] 若新增/改名模板：产物命名是否符合 ai-dev-workflow 命名规则（带流程编号/功能项序号/禁任务 ID 前缀），是否与 `docs/流程总览.md` 模板索引一致
+- [ ] 若新增/改名模板：产物命名是否符合 ai-dev-workflow 命名规则（带流程编号/功能项序号/禁任务 ID 前缀），是否与 `skill/ai-dev-workflow/docs/流程总览.md` 模板索引一致
 
 ### B. 入口与触发
-- [ ] 是否涉及流程步骤（0.x/1.x~5.x）？是 → 同步：SKILL.md 命令表 + 步骤小节 + 落盘规则 + 命名规则 + 确认闸门清单 + `通用-模块进度与断点.md` 步骤行 + README 命令表/流程图
+- [ ] 是否涉及流程步骤（0.x/1.x~5.x）？是 → 同步：SKILL.md 命令表 + 步骤小节 + 落盘规则 + 命名规则 + 确认闸门清单 + `templates/通用-模块进度与断点.md` 步骤行 + README 命令表/流程图
 - [ ] 触发描述（各 SKILL.md / commands frontmatter `description`）是否要加触发词，让 Agent 在该场景能加载到
 - [ ] 规范技能（非命令型）是否要在 ai-dev-workflow"配套规范 skill 触发矩阵"登记加载时机
 
@@ -39,6 +39,7 @@
 ## 2. 变更后：验收
 
 - [ ] **全仓引用一致性复查**：改后 `search_content` 关键词复查，确认无"漏网"旧表述
+- [ ] **frontmatter 机械校验**（改过任何 SKILL.md / commands `description` 时必做）：全部 SKILL.md + commands/*.md 跑一遍 YAML 解析（description 内半角冒号 `: ` 必须用引号包裹或全角冒号；Ruby `YAML.safe_load` / Python yaml 均可），并确认 description 长度 ≤1024 字符——防"改了触发词结果 frontmatter 解析失败 / 触发词被截断"
 - [ ] 变更说明：在 commit message 写清"改了哪些技能 / 为什么 / 核对项出处"，便于后人追溯（本仓库靠 commit 原子落地，一次变更一个 commit）
 - [ ] 对外发布影响：使用者的已装副本需重新 `./install.sh --force`（或按 docs/usage-zh.md 更新方式）才生效，README/usage-zh 的更新说明若涉及安装方式同步写清
 
@@ -48,6 +49,6 @@
 | :--- | :--- |
 | 改代码规范（java/comment/database/build/test） | check-standards 核对项 + 05-examples/04-templates + legacy-onboarding + ai-dev-workflow 触发矩阵 + README |
 | 改核对项（check-standards） | 33 项清单 + templates/5.3-验收报告.md 关键规范表 + 各规范技能对应章节 |
-| 改流程（ai-dev-workflow） | SKILL.md（命令表/步骤/落盘/命名/闸门）+ 模块进度模板 + README 流程图 + docs/流程总览.md + commands/* |
+| 改流程（ai-dev-workflow） | SKILL.md（命令表/步骤/落盘/命名/闸门）+ 模块进度模板 + README 流程图 + skill/ai-dev-workflow/docs/流程总览.md + commands/* |
 | 新增模板/命令 | SKILL.md 命令表 + README 命令表 + 模板索引 + 计数（全仓搜旧数字） |
 | 经验固化（experience → 规则） | 归属技能 + check-standards + 引用方 + experience 归档 |

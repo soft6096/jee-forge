@@ -1,6 +1,6 @@
 ---
 name: ai-dev-workflow
-description: Use when developing a Java backend feature — 覆盖三类场景：① 完整 spec 驱动流程（按流程开发/按规格开发/生成功能清单/写技术方案/拆任务/契约测试/AI 编码收敛）；② 轻量模式（写个接口/写 Controller/Service/ServiceImpl/实现功能/新增接口/改功能），直接"加载规范 → 写码(全注释+全日志) → check-standards 兜底"；③ 同模块已有历史产物时的迭代/改逻辑（把 XX 逻辑改一下/调整 XX 功能/在 XX 模块上新增个 XX）→ 必须先 0.8 /change-impact 定位旧产物、变更映射、产物同步计划（人确认）→ 从源头 1.1 同步产物 → 再写码，禁止直接改码/禁止用轻量模式绕过产物同步。Triggers on: "按流程开发 XX 模块"、"按 jee-forge 流程开发 XX 模块"、"用 jee-forge 开发 XX 模块"、"按 ai-dev-workflow 流程开发 XX 模块"、"用 ai-dev-workflow 开发 XX 模块"（即用户说 XX 模块 + 提到 按流程/jee-forge/ai-dev-workflow 任一 → 均触发本 skill，任意支持 Agent Skills 的工具通用）；轻量触发：写个 XX 接口/实现 XX 功能/写 Controller/Service/新增 XX 接口/把 XX 逻辑改一下/调整 XX 功能/在 XX 模块上改。无需求文档直接要求写码 → 自动轻量模式（加载规范 skill → 全量注释+全量日志写码 → check-standards 兜底，不因没走流程而跳过注释/日志/核对；改逻辑前先 ls docs/ 查历史产物，有 → 先 0.8）。Applies to Java service projects (Controller/Listener/Job) and similar layered backends. 续跑触发：继续 XX 模块/继续 XX 模块的需求/继续上次中断的任务/接着上次 → 按 /progress 逻辑从断点续跑（禁止从 1.1 重跑）。
+description: "Use when developing a Java backend feature — 覆盖三类场景：① 完整 spec 驱动流程（按流程开发/按规格开发/生成功能清单/写技术方案/拆任务/契约测试/AI 编码收敛）；② 轻量模式（写个接口/写 Controller/Service/ServiceImpl/实现功能/新增接口/改功能），直接\"加载规范 → 写码(全注释+全日志) → check-standards 兜底\"；③ 同模块已有历史产物时的迭代/改逻辑（把 XX 逻辑改一下/调整 XX 功能/在 XX 模块上新增个 XX）→ 必须先 0.8 /change-impact 定位旧产物、变更映射、产物同步计划（人确认）→ 从源头 1.1 同步产物 → 再写码，禁止直接改码/禁止用轻量模式绕过产物同步。Triggers on: \"按流程开发 XX 模块\"、\"按 jee-forge 流程开发 XX 模块\"、\"用 jee-forge 开发 XX 模块\"、\"按 ai-dev-workflow 流程开发 XX 模块\"、\"用 ai-dev-workflow 开发 XX 模块\"（即用户说 XX 模块 + 提到 按流程/jee-forge/ai-dev-workflow 任一 → 均触发本 skill，任意支持 Agent Skills 的工具通用）；轻量触发：写个 XX 接口/实现 XX 功能/写 Controller/Service/新增 XX 接口/把 XX 逻辑改一下/调整 XX 功能/在 XX 模块上改。无需求文档直接要求写码 → 自动轻量模式（加载规范 skill → 全量注释+全量日志写码 → check-standards 兜底，不因没走流程而跳过注释/日志/核对；改逻辑前先 ls docs/ 查历史产物，有 → 先 0.8）。Applies to Java service projects (Controller/Listener/Job) and similar layered backends. 续跑触发：继续 XX 模块/继续 XX 模块的需求/继续上次中断的任务/接着上次 → 按 /progress 逻辑从断点续跑（禁止从 1.1 重跑）。"
 ---
 
 # AI 开发完整流程（需求 → 上线）
@@ -38,7 +38,7 @@ description: Use when developing a Java backend feature — 覆盖三类场景�
 - [ ] JDBC URL 字符集：**不写 `characterEncoding=utf8mb4`**（8.x 报 Unsupported character encoding），推荐不写或 `characterEncoding=UTF-8`；`serverTimezone=Asia/Shanghai` 必带
 - [ ] JDBC URL 端口与目标环境实际一致（禁止默认 3306 想当然）
 - [ ] MyBatis-Plus 插件配置（分页 + 乐观锁，参考 java-code-standards `04-templates/ConfigTemplate.java`）
-- [ ] MetaObjectHandler 实现（createTime/updateTime 自动填充，参考 `04-templates/MyMetaObjectHandler.java`）
+- [ ] MetaObjectHandler 实现（createTime/updateTime 自动填充，参考 java-code-standards `04-templates/MyMetaObjectHandler.java`）
 - [ ] 建库/建表显式 utf8mb4；**库初始化按当前 schema.sql 全量重建，禁止沿用旧库旧表**
 - [ ] MySQL 驱动 Connector/J 8.x（Spring Boot BOM 管理，无 5.1 旧驱动）
 - [ ] 日志配置：`resources/logback-spring.xml` 已提供（控制台 + 滚动文件 + 环境级 level，参考 java-code-standards `04-templates/logback-spring.xml`）；application.yml 有 logging.level 覆盖
@@ -106,10 +106,10 @@ description: Use when developing a Java backend feature — 覆盖三类场景�
 git 是流程的"干净起点 + 可追溯收尾"的底座。使用 git 的项目建议遵守：
 
 1. **动工前（首个 1.1 拆解前或首次写码前）**：`git status` 确认工作区干净；从主分支新建独立分支（`git switch -c feature/<模块>`，或用 worktree），**不在 main/主分支上直接开发**；
-2. **基线先绿**：动工前先跑一次现有测试/构建（`mvn test` 或项目既有命令），确认"起点是绿的"并把结论记入 00-进度/1.1 备注（无测试/无构建 → 注明"无基线"）；
+2. **基线先绿**：动工前先跑一次现有测试/构建（`mvn test` 或项目既有命令），确认"起点是绿的"并把结论记入 `通用-模块进度与断点.md` 或 1.1 备注（无测试/无构建 → 注明"无基线"）；
 3. **开发中**：每个任务（4.1 任务项）完成后独立提交，commit message = 任务 ID + 描述（联动硬性约束第 5 条）；不混提交、不提交半成品；
 4. **收尾（5.3 后）**：向用户展示工作区状态与改动摘要，由用户决定 **merge 到主分支 / 开 PR / 保留 / 丢弃**；清理多余 worktree；**不自动 merge、不代用户 push**；
-5. **不适用时**：老项目无 git / 无法建分支 → 跳过本纪律并在 00-进度或验收报告注明"未采用 git 纪律（原因）"。
+5. **不适用时**：老项目无 git / 无法建分支 → 跳过本纪律并在 `通用-模块进度与断点.md` 或验收报告注明"未采用 git 纪律（原因）"。
 
 ## 两种使用方式
 
@@ -183,6 +183,7 @@ git 是流程的"干净起点 + 可追溯收尾"的底座。使用 git 的项目
 
 > [!IMPORTANT] 产物命名统一规则
 > 技术方案 = `3.<功能项序号>.1-<功能名>-技术方案.md`；接口清单 = `3.<功能项序号>.2-<功能名>-接口清单（前后端通用）.md`；任务拆解 = `4.1.<功能项序号>-<功能名>-任务拆解.md`；需求质量核对 = `1.2-需求质量核对.md`；规范核对报告 = `5.2.<功能项序号>-<功能名>-规范核对报告.md`；验收报告 = `5.3.<功能项序号>-<功能名>-验收报告.md`；功能覆盖与验收表 = `5.4.1-<模块名>-功能覆盖与验收表.md`（单模块固定 .1；多模块需求：`5.4.<清单序号>-<模块名>-功能覆盖与验收表.md`）。**功能项序号 = 功能清单功能项表格的 # 列**（3.x / 4.1.x / 5.2.x / 5.3.x 同一功能用同一序号）；契约测试产物是测试代码（`src/test/java/.../Test<功能名>.java`），非 md 不参与此编号；**文件名禁止拼接任务 ID（T0xx）、需求点编号或任何额外前缀**——任务 ID 只用于 commit message，不进入产物文件名。
+> **模板编号 ≠ 产物编号**：`templates/` 下模板的 `3.0/3.1/3.2/3.3/3.4`、`5.4` 等是**模板库索引号**（每类模板一份）；产物文件名里的 `3.<功能项序号>.1/.2`、`5.4.1` 等是**产物编号**（功能项 × 子产物序号）。两者体系不同、不要求对等（如接口清单模板是 `3.4-…`，产物是 `3.<功能项序号>.2-…`）——产物的规范文件名以上面规则为准。
 
 > **docs 模块目录命名**：`<模块名>V<版本号>-<YYYYMMDDHHMMSS>`——模块名 + V 开头版本号（**从 PRD/需求文档获取**，如 V1.2.0）+ 连字符 + 功能清单生成时间戳（YYYYMMDDHHMMSS）。例：`docs/订单模块V1.2.0-20260824103000/`。目录在 1.1 功能清单步骤创建（`/feature-list` 从需求文档读取版本号），后续步骤产物（含 2.1 项目约束）全部落入该目录，跨版本开发互不覆盖。
 

@@ -30,12 +30,12 @@ description: 为存量代码补全/完善日志（对已完成但日志不完善
 
 | 日志点 | 规则 | 来源 |
 |---|---|---|
-| 类声明 | 全类 `@Slf4j`（Lombok），禁止散落 `private static final Logger` 混用 | 04-logging §1 |
-| System.out | 一律删除，替换为 log 输出 | 04-logging §1 |
-| 请求入口（Controller） | 记入参摘要 + 耗时，出口记结果 | 04-logging §最佳实践 |
-| 关键业务节点 | 状态变更/下单/支付/取消/消费处理完成/定时任务开始结束 → INFO | 04-logging §2 |
-| 异常处 | ERROR 且带堆栈（`log.error("msg, orderId={}", orderId, e)`，异常对象作最后参数）；catch 块禁止空吞 | 04-logging §4 |
-| 日志内容 | 占位符 `{}` 禁止字符串拼接；关键日志带业务上下文 ID；不记敏感信息（密码/token/手机号脱敏）；大对象只记关键字段 | 04-logging §3/§5 |
+| 类声明 | 全类 `@Slf4j`（Lombok），禁止散落 `private static final Logger` 混用 | 04-logging-standards §1 |
+| System.out | 一律删除，替换为 log 输出 | 04-logging-standards §1 |
+| 请求入口（Controller） | 记入参摘要 + 耗时，出口记结果 | 04-logging-standards §最佳实践 |
+| 关键业务节点 | 状态变更/下单/支付/取消/消费处理完成/定时任务开始结束 → INFO | 04-logging-standards §2 |
+| 异常处 | ERROR 且带堆栈（`log.error("msg, orderId={}", orderId, e)`，异常对象作最后参数）；catch 块禁止空吞 | 04-logging-standards §4 |
+| 日志内容 | 占位符 `{}` 禁止字符串拼接；关键日志带业务上下文 ID；不记敏感信息（密码/token/手机号脱敏）；大对象只记关键字段 | 04-logging-standards §3/§5 |
 
 ## 缺口扫描（先扫后补——防长文件漏日志点）
 
@@ -43,7 +43,7 @@ description: 为存量代码补全/完善日志（对已完成但日志不完善
 
 ### 第 1 步：产出缺口清单（文件:行号:缺口类型:说明）
 
-对目标代码**逐文件**执行扫描，四类缺口（`04-logging-standards.md` 为判定依据）：
+对目标代码**逐文件**执行扫描，四类缺口（java-code-standards `00-common/04-logging-standards.md` 为判定依据）：
 
 | 缺口类型 | 扫描方式 | 判定 |
 |---|---|---|
