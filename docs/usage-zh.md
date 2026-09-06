@@ -18,9 +18,9 @@ jee-forge 把约束拆成 9 个**按需加载**的技能（Skill），各管一�
 
 | skill | 管什么 | 你这样说就会触发 |
 |---|---|---|
-| `ai-dev-workflow` | 完整开发流程（0.x 前置 + 1.1~5.3 五步） | `/jee-forge XX 模块` 或 "按流程开发 XX 模块" |
+| `ai-dev-workflow` | 完整开发流程（0.x 前置 + 1.1~5.3 五步 + 5.4 模块覆盖收尾） | `/jee-forge XX 模块` 或 "按流程开发 XX 模块" |
 | `bugfix-workflow` | 缺陷修复纪律（复现→根因→最小修复→防回归→兜底） | `/bugfix` 或 "这个 bug 帮我修" |
-| `java-code-standards` | Java 代码规范（19 类类规范 + 安全/分布式/性能） | "写个接口 / 写个 Controller / 帮我写段代码" |
+| `java-code-standards` | Java 代码规范（01-java 20 份类/场景规范 + 性能/模板/示例） | "写个接口 / 写个 Controller / 帮我写段代码" |
 | `comment-standards` | 注释规范 + 存量补注释 | "给 XX 模块补注释" |
 | `database-standards` | SQL / 建表 / 索引 / 分页 / MyBatis-Plus | "写个 SQL / 建张表" |
 | `build-standards` | pom / 依赖 / 多模块 | "写 pom / 加个依赖" |
