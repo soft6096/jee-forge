@@ -19,6 +19,7 @@
 #       Claude Code 类工具通常只识别 ~/.claude/skills/<name>/SKILL.md 一级目录。
 #     本脚本为后者（及不想整仓 clone 的用户）提供一键分发。
 #   - 不依赖 symlink（部分工具不跟随软链，已验证会漏识别）。
+#   - 兼容 bash 3.2（macOS 自带）：不使用关联数组（declare -A）等 bash 4+ 特性。
 # =============================================================================
 set -euo pipefail
 
@@ -26,12 +27,18 @@ REPO_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 SKILL_ROOT="$REPO_DIR/skill"
 
 # 各工具 -> 技能目录（按需增补；目录不存在则自动跳过）
-declare -A TOOL_DIRS=(
-  [claude]="$HOME/.claude/skills"
-  [codebuddy]="$HOME/.codebuddy/skills"
-  [opencode]="$HOME/.agents/skills"
-  [codex]="$HOME/.agents/skills"   # opencode / Codex 共用 ~/.agents/skills
-)
+# 用函数 + case 做映射，避免 bash 4+ 的关联数组（详见文件头"兼容 bash 3.2"说明）
+ALL_TOOLS=(claude codebuddy opencode codex)
+
+tool_dir() {
+  case "$1" in
+    claude)    printf '%s' "$HOME/.claude/skills" ;;
+    codebuddy) printf '%s' "$HOME/.codebuddy/skills" ;;
+    opencode)  printf '%s' "$HOME/.agents/skills" ;;
+    codex)     printf '%s' "$HOME/.agents/skills" ;;   # opencode / Codex 共用 ~/.agents/skills
+    *)         return 1 ;;
+  esac
+}
 
 TOOLS=()
 LIST_ONLY=0
@@ -46,9 +53,9 @@ while [[ $# -gt 0 ]]; do
     --tool)
       shift
       if [[ -z "${1:-}" ]]; then warn "--tool 需要一个值（all|claude|opencode|codex|codebuddy）"; exit 2; fi
-      if [[ "$1" == "all" ]]; then TOOLS=("${!TOOL_DIRS[@]}")
-      elif [[ -n "${TOOL_DIRS[$1]+x}" ]]; then TOOLS+=("$1")
-      else warn "未知工具: $1（可选：${!TOOL_DIRS[*]}）"; exit 2; fi
+      if [[ "$1" == "all" ]]; then TOOLS=("${ALL_TOOLS[@]}")
+      elif tool_dir "$1" >/dev/null 2>&1; then TOOLS+=("$1")
+      else warn "未知工具: $1（可选：claude codebuddy opencode codex）"; exit 2; fi
       ;;
     --list) LIST_ONLY=1 ;;
     --force) FORCE=1 ;;
@@ -60,19 +67,20 @@ done
 
 # ---- 解析最终安装目标目录（去重、过滤不存在的目录）-------------------------
 if [[ ${#TOOLS[@]} -eq 0 ]]; then
-  for t in "${!TOOL_DIRS[@]}"; do
-    [[ -d "${TOOL_DIRS[$t]}" ]] && TOOLS+=("$t")
+  for t in "${ALL_TOOLS[@]}"; do
+    d="$(tool_dir "$t")"
+    [[ -d "$d" ]] && TOOLS+=("$t")
   done
 fi
 
-declare -A SEEN
+SEEN=""
 TARGETS=()
 for t in "${TOOLS[@]}"; do
-  dir="${TOOL_DIRS[$t]}"
-  if [[ -z "${SEEN[$dir]+x}" ]]; then
-    SEEN[$dir]=1
-    TARGETS+=("$dir|$t")
-  fi
+  dir="$(tool_dir "$t")"
+  case "|$SEEN|" in
+    *"|$dir|"*) ;;                                    # 该目录已登记 → 去重跳过
+    *) SEEN="$SEEN|$dir"; TARGETS+=("$dir|$t") ;;
+  esac
 done
 
 if [[ ${#TARGETS[@]} -eq 0 ]]; then
