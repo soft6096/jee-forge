@@ -6,7 +6,7 @@
 
 | 级 | 位置 | 归谁 | 会不会"重复" |
 |---|---|---|---|
-| 任务级 | 验收报告「本次经验」节 | 使用者本人 | 不与技能重复 |
+| 任务级 | 项目 `docs/experience.md`（任务收尾追加条目） | 使用者本人 | 不与技能重复 |
 | 项目级 | 使用者项目 `docs/experience.md` | 使用者自己的项目 | 不与技能重复 |
 | 家族级 | 维护者把经验**翻译成规则**写入 jee-forge（规范条目 / check-standards 核对项） | 评审后全体共享 | 是"规则"不是"经验文件"，语义由条目状态管理，不产生文件重复 |
 
@@ -16,7 +16,7 @@
 
 1. 在项目 `docs/experience.md` 按模板（`skill/ai-dev-workflow/templates/通用-经验记录.md`）记一条；
 2. 给每条打状态：`本地`（仅本项目）/ `待上缴 [HARD]`（跨项目通用，准备交回）；
-3. 填"建议固化目标"：想让它最终进哪个域——check-standards / java-code-standards / comment-standards / database-standards / build-standards / test-standards / ai-dev-workflow（流程/模板/命令）/ 仅项目本地。
+3. 填"建议固化目标"：想让它最终进哪个域——check-standards / java-code-standards / comment-standards / database-standards / build-standards / test-workflow / ai-dev-workflow（流程/模板/命令）/ 仅项目本地。
 
 ## 三、怎么交回（任选）
 

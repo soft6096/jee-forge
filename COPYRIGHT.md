@@ -2,7 +2,7 @@
 
 本文件为 **jee-forge** 仓库级版权合规声明。
 
-> 本文档源自 java-code-standards 技能的《版权合规说明》，在仓库聚合（原 8 个独立技能仓库 → jee-forge 单仓库）时提升为仓库级，**适用于 `skill/` 下全部技能**（ai-dev-workflow / java-code-standards / comment-standards / database-standards / build-standards / test-standards / legacy-onboarding / check-standards）。各技能内的规范文本与代码示例均为原创，未携带任何开源再分发义务。
+> 本文档源自 java-code-standards 技能的《版权合规说明》，在仓库聚合（原 8 个独立技能仓库 → jee-forge 单仓库）时提升为仓库级，**适用于 `skill/` 下全部技能**（ai-dev-workflow / java-code-standards / comment-standards / database-standards / build-standards / test-workflow / legacy-onboarding / check-standards）。各技能内的规范文本与代码示例均为原创，未携带任何开源再分发义务。
 
 ## 1. 内容原创性声明
 

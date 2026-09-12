@@ -10,7 +10,7 @@
 
 jee-forge 把约束拆成 9 个**按需加载**的技能（Skill），各管一段：
 
-- **流程**：AI 怎么走（需求 → 方案 → 任务 → 测试 → 编码 → 核对 → 验收）
+- **流程**：AI 怎么走（需求 → 方案 → 任务 → 编码 → 核对 → 需求覆盖 → 验收）
 - **规范**：产物长什么样（代码 / 注释 / SQL / 构建 / 测试）
 - **核对**：交付前兜底（逐项 grep/ast-grep 扫描，附「文件:行号」证据）
 
@@ -18,13 +18,13 @@ jee-forge 把约束拆成 9 个**按需加载**的技能（Skill），各管一�
 
 | skill | 管什么 | 你这样说就会触发 |
 |---|---|---|
-| `ai-dev-workflow` | 完整开发流程（0.x 前置 + 1.1~5.3 五步 + 5.4 模块覆盖收尾） | `/jee-forge XX 模块` 或 "按流程开发 XX 模块" |
-| `bugfix-workflow` | 缺陷修复纪律（复现→根因→最小修复→防回归→兜底） | `/bugfix` 或 "这个 bug 帮我修" |
+| `ai-dev-workflow` | 完整开发流程（0.x 前置 + 1.1~5.3 五步） | `/jee-forge XX 模块` 或 "按流程开发 XX 模块" |
+| `bugfix-workflow` | 缺陷修复纪律（复现→根因→最小修复→功能回归→兜底） | `/bugfix` 或 "这个 bug 帮我修" |
 | `java-code-standards` | Java 代码规范（01-java 20 份类/场景规范 + 性能/模板/示例） | "写个接口 / 写个 Controller / 帮我写段代码" |
 | `comment-standards` | 注释规范 + 存量补注释 | "给 XX 模块补注释" |
 | `database-standards` | SQL / 建表 / 索引 / 分页 / MyBatis-Plus | "写个 SQL / 建张表" |
 | `build-standards` | pom / 依赖 / 多模块 | "写 pom / 加个依赖" |
-| `test-standards` | 单测 / 契约测试 / 测试数据 | "写单测 / 写契约测试" |
+| `test-workflow` | 按需生成真实调用接口的验收测试工具与独立报告 | "生成验收测试 / 生成接口测试 / 真实调用接口验证" |
 | `legacy-onboarding` | 老项目体检接入规范 | "把这个老项目接入规范" |
 | `check-standards` | 代码交付前兜底核对（33 项） | "代码跑一下 check-standards" |
 
@@ -101,13 +101,13 @@ git -C <你的 jee-forge 副本路径> pull          # 整仓 clone 方式
 ```
 legacy-onboarding ──体检存量项目──────┐
 ai-dev-workflow ──流程编排───────────┤   → 8 维度扫描 / 产物模板 / 场景判定
-bugfix-workflow ──缺陷修复纪律────────┘   → /bugfix：复现→根因→最小修复→防回归
-  │  0.5 / 4.2 契约测试 / 5.1 编码
+bugfix-workflow ──缺陷修复纪律────────┘   → /bugfix：复现→根因→最小修复→功能回归
+  │  0.5 / 5.1 编码
   ▼
 java-code-standards  ←→ comment-standards（注释）
   │        ←→ database-standards（SQL/建表）
   │        ←→ build-standards（pom/依赖）
-  │        ←→ test-standards（测试）
+  │        ←→ test-workflow（按需验收测试）
   ▼
 check-standards ──交付前兜底核对（33 项 + 证据 + 报告）──→ 验收
 ```

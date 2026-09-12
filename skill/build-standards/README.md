@@ -23,7 +23,7 @@ AI 生成构建配置常见问题：版本散落子模块、依赖 scope 乱用�
 | [ai-dev-workflow](https://github.com/soft6096/jee-forge/tree/main/skill/ai-dev-workflow) | 项目流程，技术方案阶段含工程结构设计 |
 | [database-standards](https://github.com/soft6096/jee-forge/tree/main/skill/database-standards) | SQL 规范，无直接引用 |
 | [comment-standards](https://github.com/soft6096/jee-forge/tree/main/skill/comment-standards) | 注释规范，无直接引用 |
-| [test-standards](https://github.com/soft6096/jee-forge/tree/main/skill/test-standards) | 测试规范，无直接引用 |
+| [test-workflow](https://github.com/soft6096/jee-forge/tree/main/skill/test-workflow) | 验收测试工具（按需生成），无直接引用 |
 
 ## 安装
 

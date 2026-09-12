@@ -1,0 +1,84 @@
+# 验收用例示例（test-workflow）
+#
+# 说明：本文件由 /gen-test 从「3.x 接口清单 + 技术方案验收场景」生成。
+# 设计准则见 skill/test-workflow/standards/case-design.md：
+#   - 核心业务场景优先，不做字段取值穷举
+#   - 每个字段取代表性合法值 + 代表性非法值；边界只测临界点
+# baseUrl / token 走环境变量，禁止写死。
+
+module: 订单模块
+baseUrl: ${BASE_URL}          # 例：http://127.0.0.1:8080
+auth:
+  type: bearer                # none | bearer
+  tokenEnv: ${TOKEN}
+
+cases:
+  # ---- 合法 ----
+  - id: TC-001
+    name: 创建订单（合法）
+    scenario: 合法
+    request:
+      method: POST
+      path: /order
+      headers: { Content-Type: application/json }
+      body:
+        userId: 88
+        itemIdList: [1, 2]
+        amount: "299.00"
+        remark: 加急配送
+    expect:
+      status: 200
+      fields:
+        code: 200
+        "data.orderId": isNumber
+    assertType: fields
+
+  # ---- 非法 ----
+  - id: TC-002
+    name: 商品不存在（非法）
+    scenario: 非法
+    request:
+      method: POST
+      path: /order
+      body:
+        userId: 88
+        itemIdList: [99999]
+        amount: "100.00"
+    expect:
+      status: 400
+      fields:
+        code: 400
+    assertType: fields
+
+  # ---- 边界 ----
+  - id: TC-003
+    name: 金额为 0（边界）
+    scenario: 边界
+    request:
+      method: POST
+      path: /order
+      body:
+        userId: 88
+        itemIdList: [1]
+        amount: "0"
+    expect:
+      status: 400
+      fields:
+        code: 400
+    assertType: fields
+
+  # ---- 并发（仅断不变式，不断精确计数）----
+  - id: TC-004
+    name: 库存充足时不超卖（并发）
+    scenario: 边界
+    concurrency:
+      requests: 20
+    request:
+      method: POST
+      path: /order/seckill
+      body:
+        itemId: 1
+        userId: 88
+    expect:
+      maxSuccess: 100        # 成功数不得超过库存上限（不变式）
+    assertType: concurrency

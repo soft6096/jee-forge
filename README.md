@@ -34,7 +34,7 @@ cd jee-forge
 /jee-forge 订单模块
 ```
 
-即可进入完整开发流程（需求 → 方案 → 任务 → 契约测试 → 编码 → 规范核对 → 验收）。写码收尾统一用 `/check-standards` 做兜底核对。
+即可进入完整开发流程（需求 → 方案 → 任务 → 编码 → 规范核对 → 需求覆盖 → 验收）。写码收尾统一用 `/check-standards` 做兜底核对。
 
 > 看不到 `/jee-forge`？直接说"按流程开发 XX 模块"效果等价（斜杠命令是否出现取决于工具的 skill 命令注册）。
 
@@ -44,7 +44,7 @@ cd jee-forge
 
 直接丢给 AI 一句提示词让它写代码，结果往往是：代码能跑但没人敢维护、接口悄悄偏离设计、SQL 没索引、注释稀疏、测试从零开始。这 9 个技能把 AI 编码约束成一条**分工明确、按需加载**的流水线：
 
-- **流程管"怎么走"**：需求 → 方案 → 任务 → 契约测试 → 编码 → 核对 → 验收（ai-dev-workflow）
+- **流程管"怎么走"**：需求 → 方案 → 任务 → 编码 → 核对 → 需求覆盖 → 验收（ai-dev-workflow）
 - **规范管"长什么样"**：代码 / 注释 / SQL / 构建 / 测试 各自成域，谁写谁加载
 - **核对管"交付前兜底"**：写完逐项 grep/ast-grep 实际扫描，禁止凭记忆答 ✅
 
@@ -54,17 +54,17 @@ cd jee-forge
 
 | skill | 类型 | 职责 | 典型触发说法 |
 |---|---|---|---|
-| [`ai-dev-workflow`](skill/ai-dev-workflow) | 流程 | 完整开发流程（0.x 前置 + 1.1~5.3 五步 + 5.4 模块覆盖收尾 + 20 命令 + 24 模板） | `/jee-forge XX 模块` / "按流程开发 XX 模块" |
-| [`bugfix-workflow`](skill/bugfix-workflow) | 流程 | 缺陷修复纪律：复现→assess 根因→最小修复→防回归测试→兜底核对 | `/bugfix` / "这个 bug 帮我修" |
+| [`ai-dev-workflow`](skill/ai-dev-workflow) | 流程 | 完整开发流程（0.x 前置 + 1.1~5.3 五步 + 18 命令 + 22 模板） | `/jee-forge XX 模块` / "按流程开发 XX 模块" |
+| [`bugfix-workflow`](skill/bugfix-workflow) | 流程 | 缺陷修复纪律：复现→assess 根因→最小修复→功能回归→兜底核对 | `/bugfix` / "这个 bug 帮我修" |
 | [`java-code-standards`](skill/java-code-standards) | 代码规范 | Java 代码规范引擎（01-java 20 份类/场景规范 + 03-performance + 04-templates + 05-examples） | "写个接口/写 Controller/写 Service" |
 | [`comment-standards`](skill/comment-standards) | 注释规范 | 全量注释规范 + 存量代码补注释工作流 | "给 XX 模块补注释" |
 | [`database-standards`](skill/database-standards) | SQL 规范 | SQL / 表设计 / 索引 / 分页 / 反模式 / MyBatis-Plus | "写个 SQL" / "建张表" |
 | [`build-standards`](skill/build-standards) | 构建规范 | Maven pom / 依赖管理 / 多模块结构 | "写 pom" / "加个依赖" |
-| [`test-standards`](skill/test-standards) | 测试规范 | 单元测试 / 契约测试 / 测试数据 | "写单测" / "写契约测试" |
+| [`test-workflow`](skill/test-workflow) | 按需验收测试工具 | 按需生成真实调用接口的验收测试工具与独立报告 | 生成验收测试 / 生成接口测试 / 真实调用接口验证 |
 | [`legacy-onboarding`](skill/legacy-onboarding) | 存量接入 | 存量项目体检与规范接入（8 维度 + A/B/C 分级整改） | "老项目接入规范" / "扫描这个项目" |
 | [`check-standards`](skill/check-standards) | 兜底核对 | 代码交付前核对（33 项 + 证据 + 报告 + 确认闸门） | "/check-standards" / "对 xx 跑 check-standards" |
 
-**依赖关系**：`ai-dev-workflow` 编排流程并挂载各规范技能；`java-code-standards` 引用 comment/database/test/build；`check-standards` 的核对项覆盖其余全部技能；`legacy-onboarding` 体检时按 8 维度聚合加载各规范；`bugfix-workflow` 处理缺陷修复并引用 ai-dev-workflow（产物同步）/check-standards（兜底）。合并为单仓库后**一体安装、引用不悬空**。
+**依赖关系**：`ai-dev-workflow` 编排流程并挂载各规范技能；`java-code-standards` 引用 comment/database/build；`check-standards` 的核对项覆盖其余全部技能；`legacy-onboarding` 体检时按 8 维度聚合加载各规范；`bugfix-workflow` 处理缺陷修复并引用 ai-dev-workflow（产物同步）/check-standards（兜底）；`test-workflow` 按需生成真实调用接口的验收测试工具。合并为单仓库后**一体安装、引用不悬空**。
 
 ## 技能结构与命令结构
 
@@ -73,7 +73,7 @@ cd jee-forge
 每个技能 = 一个自包含目录（`skill/<name>/`），入口统一为 `SKILL.md`：
 
 - `SKILL.md` 顶部 frontmatter 的 `name` + `description` 决定 Agent 何时加载它（触发）；正文是加载后 AI 遵循的规则/加载矩阵。
-- 命令型技能把斜杠命令放在自己的 `commands/`（文件名 = 命令名）；文档型技能把规范拆在 `standards/` 或按主题分子目录；**当前 9 个技能中 `ai-dev-workflow`（20 命令）与 `bugfix-workflow`（/bugfix）带 commands/，其余规范技能靠自动触发，无需命令。**
+- 命令型技能把斜杠命令放在自己的 `commands/`（文件名 = 命令名）；文档型技能把规范拆在 `standards/` 或按主题分子目录；**当前 9 个技能中 `ai-dev-workflow`（18 命令）、`bugfix-workflow`（/bugfix）与 `test-workflow`（/gen-test）带 commands/，其余规范技能靠自动触发，无需命令。**
 
 ### 仓库目录树
 
@@ -81,10 +81,10 @@ cd jee-forge
 jee-forge/
 ├── README.md / LICENSE / COPYRIGHT.md / install.sh / docs/
 └── skill/
-    ├── ai-dev-workflow/          # ★ 流程技能（唯一命令型）
+    ├── ai-dev-workflow/          # ★ 流程技能（命令型）
     │   ├── SKILL.md              # 流程总纲：场景判定/触发矩阵/闸门/硬性约束
-    │   ├── commands/             # 20 个斜杠命令（见下节命令表）
-    │   ├── templates/            # 24 份中间产物空白模板（0.0~5.4 + req-intake + 通用-模块进度与断点）
+    │   ├── commands/             # 18 个斜杠命令（见下节命令表）
+    │   ├── templates/            # 22 份中间产物空白模板（0.0~5.3 + req-intake + 通用-模块进度与断点）
     │   └── docs/                 # 方法论文档（流程总览 / Spec-Coding / Vibe 对比）
     ├── bugfix-workflow/          # 缺陷修复纪律：SKILL.md + commands/bugfix.md + templates/bugfix-修复单.md
     ├── java-code-standards/      # 代码规范引擎
@@ -97,16 +97,16 @@ jee-forge/
     ├── comment-standards/        # 注释规范：SKILL.md + standards/（comment-standards.md、gen-comments-workflow.md）
     ├── database-standards/       # SQL 规范：SKILL.md + standards/（SQL/表设计/索引/分页/反模式/数据安全）+ mybatis-plus/（3 份）
     ├── build-standards/          # 构建规范：SKILL.md + standards/（maven/dependency/module）
-    ├── test-standards/           # 测试规范：SKILL.md + standards/（unit/contract/test-data）
+    ├── test-workflow/            # 按需验收测试：SKILL.md + commands/（gen-test）+ standards/（case-design/runner-standards）+ assets/（runner）+ templates/（验收测试报告）
     ├── legacy-onboarding/        # 存量接入：SKILL.md + standards/（workflow/report-template）
     └── check-standards/          # 兜底核对：SKILL.md（33 项核对全部内联）+ README.md
 ```
 
 > 各技能内部结构各不相同（有 `standards/`、按主题子目录、或单文件内联）是刻意保留——每份 `SKILL.md` 的"加载矩阵"写死了自己的规范路径，统一目录反而会破坏引用与按需加载。
 >
-> **模板命名规则**：`0.x / 1.x` 带小数点 = **流程步骤产物模板**（0.0 项目初始化、0.5 存量扫描、0.9 需求入口整形…5.3 验收）；`通用-` = **全程通用模板（非步骤）**：`通用-中间产物-MD样式规范.md`（所有产物样式）、`通用-模块进度与断点.md`（模块目录伴随，配合 `/progress`）。
+> **模板命名规则**：`0.x / 1.x` 带小数点 = **流程步骤产物模板**（0.0 项目初始化、0.5 存量扫描、0.9 需求入口整形…5.3 需求覆盖）；`通用-` = **全程通用模板（非步骤）**：`通用-中间产物-MD样式规范.md`（所有产物样式）、`通用-模块进度与断点.md`（模块目录伴随，配合 `/progress`）。
 
-### ai-dev-workflow 命令结构（20 个斜杠命令）
+### ai-dev-workflow 命令结构（18 个斜杠命令）
 
 | 命令 | 归属 | 作用 |
 |---|---|---|
@@ -123,11 +123,9 @@ jee-forge/
 | `/constraints` | 2.1 | 项目约束（标准模式 / 存量适配模式，含工具选型人确认） |
 | `/design` | 3.x | 技术方案（3.0 通用骨架 + Controller/Listener/Job 类型模板） |
 | `/task-breakdown` | 4.1 | 任务拆解（公共组件入 Phase 0.5） |
-| `/contract-tests` | 4.2 | 接口契约测试（先红后绿，验收场景翻译） |
-| `/implement` | 5.1 | AI 编码（让测试变绿；编码完成即停） |
+| `/implement` | 5.1 | AI 编码（编码完成即停） |
 | `/check-standards` | 5.2 | **兜底核对入口**（强制独立节点：产物命名矫正 → check-standards skill 逐项扫描 → 证据报告 → 用户确认；5.3 前置硬依赖） |
-| `/accept` | 5.3 | 验收报告（前置检查 5.2 报告存在性；含 quickstart 调通证据） |
-| `/coverage` | 5.4 | 功能覆盖与验收表（**模块收尾闸门**：全部功能项 5.2/5.3 通过后对照 1.1 逐功能项实查全链路；缺口→人确认（重跑/豁免）→复跑至全绿才收尾；产物统一带清单序号 `5.4.<清单序号>-<模块名>-功能覆盖与验收表.md`，单模块固定 .1、多模块各一份） |
+| `/accept` | 5.3 | 需求覆盖报告（逐需求点核对代码证据/缺口，独立生成） |
 | `/gen-comments` | 附加 | 存量代码补注释 |
 | `/gen-logs` | 附加 | 存量代码补全/完善日志 |
 
@@ -156,7 +154,7 @@ jee-forge/
 
 ### 整体流程一览
 
-下图来自 ai-dev-workflow 方法论文档（[`skill/ai-dev-workflow/docs/流程总览.md`](skill/ai-dev-workflow/docs/流程总览.md)），与下方"0.x 前置 / 1.1~5.4 主流程"两表互为对照。
+下图来自 ai-dev-workflow 方法论文档（[`skill/ai-dev-workflow/docs/流程总览.md`](skill/ai-dev-workflow/docs/流程总览.md)），与下方"0.x 前置 / 1.1~5.3 主流程"两表互为对照。
 
 ```text
 产品需求
@@ -192,14 +190,11 @@ jee-forge/
 3.x 技术方案 ──→ 每功能项一份技术方案 md（3.0 通用骨架 + 类型模板，含验收场景）
   │                模板：3.0 通用骨架 + 3.1-Controller / 3.2-Listener / 3.3-Job（四段式）
   ▼
-4.1/4.2 任务拆解 + 契约测试（人主导）──→ 任务拆解.md + 红色测试 + DDL
-  │                模板：4.1-任务拆解.md、4.2-接口契约测试.md
+4.1 任务拆解（人主导）──→ 任务拆解.md + DDL
+  │                模板：4.1-任务拆解.md
   ▼
-5.1/5.2/5.3 AI 编码 + 规范核对（强制独立节点）+ 收敛验收（AI 主导）──→ 绿色代码 + 规范核对报告 + 验收报告
-  │                模板：5.1-编码指令.md、5.3-验收报告.md（规范核对加载 check-standards skill）
-  ▼
-5.4 模块功能覆盖与验收表（/coverage 模块收尾闸门）──→ 对照 1.1 逐功能项实查全链路，
-  │      缺口 → 人确认（追加任务重新跑 / 豁免）→ 复跑至全绿才收尾
+5.1/5.2/5.3 AI 编码 + 规范核对（强制独立节点）+ 需求覆盖（AI 主导）──→ 绿色代码 + 规范核对报告 + 需求覆盖报告
+  │                模板：5.1-编码指令.md、5.3-需求覆盖报告.md（规范核对加载 check-standards skill）
   ▼
 人工验收 ──→ 上线
 ```
@@ -216,7 +211,7 @@ jee-forge/
 | 0.8 变更影响分析 | `/change-impact` | 定位旧产物 → 变更点映射 → 产物同步计划（新增/修改/删除）→ **人确认后从源头 1.1 同步** | `docs/<模块>/0.8-迭代变更影响分析.md` |
 | 0.9 需求入口整形 | `/req-intake` | **可选前置**。触发：需求跨多 Java 模块 / 超大 / 混杂非 Java 内容（任一）。**非 Java 服务端需求一律直接忽略**（不拆/不列清单/不产文件）；按 Java 模块生成模块级需求 md（含来源段落追踪/验收基线/跨模块依赖）→ **人确认后才各进 1.1** | `docs/req-intake-<时间戳>/`（清单 + 每模块一份需求 md） |
 
-### 1.1 ~ 5.4 主流程（前五步为功能项级，5.4 为模块收尾）
+### 1.1 ~ 5.3 主流程（功能项级）
 
 | 步骤 | 命令 | 做什么 | 产物（模板） | 谁主导 |
 |---|---|---|---|---|
@@ -225,11 +220,10 @@ jee-forge/
 | 1.3 澄清 | `/clarify` | 盘问歧义/入口复杂度/边界用例/依赖 + 裁决 req-gate 🔲 项 | `1.3-澄清问题清单.md` | 人 + AI |
 | 2.1 项目约束 | `/constraints` | 技术架构 + 项目约束（硬规则，可检查；标准/存量适配双模式；工具选型人确认） | `2.1-项目约束.md` | 人 |
 | 3.x 技术方案 | `/design` | 每功能项一份方案（3.0 通用骨架 + 类型四段）；含验收场景、公共组件识别；Controller 功能项附带接口清单 | `3.<序号>.1-<功能>-技术方案.md`、`3.<序号>.2-…-接口清单.md` | 人 + AI 辅助 |
-| 4.1/4.2 任务拆解 + 契约测试 | `/task-breakdown` `/contract-tests` | 任务拆解（公共组件入 Phase 0.5）+ 契约测试**先红** + DDL | `4.1.<序号>-任务拆解.md`、测试代码 | 人 |
-| 5.1 AI 编码 | `/implement` | 让测试变绿，按注释/日志规范同步生成注释与日志；编码完成即停 | 绿色代码 + 测试结果 | AI |
+| 4.1 任务拆解 | `/task-breakdown` | 任务拆解（公共组件入 Phase 0.5）+ DDL | `4.1.<序号>-任务拆解.md` | 人 |
+| 5.1 AI 编码 | `/implement` | 按注释/日志规范同步生成注释与日志；编码完成即停 | 代码 + 编码完成报告 | AI |
 | 5.2 规范核对 | `/check-standards` | **强制独立节点**（编码 Agent 不自评）：先矫正产物命名/路径 → 加载 check-standards skill 用 grep/ast-grep 逐项核对**全部 33 项（含方法级注释/日志全覆盖）**，每项附证据 → 未到位先与用户确认再补齐 → 报告获用户确认 | `5.2.<序号>-<功能>-规范核对报告.md` | AI + 人验证 |
-| 5.3 验收 | `/accept` | **前置检查 5.2 报告存在性（无则拒收）**；人工补核 + 重复代码核对 + **quickstart 调通证据**（全新构建 + 真实启动 + 按验收场景实测） | `5.3.<序号>-<功能>-验收报告.md` | 人 |
-| 5.4 模块覆盖收尾 | `/coverage` | **模块收尾闸门**（全部功能项 5.2/5.3 通过后）：对照 1.1 逐功能项实查全链路（方案/接口/测试/代码/5.2/5.3），防漏做/漏验收/漏收敛；缺口 → 人确认（追加任务重新跑 / 豁免）→ 复跑至全绿才收尾；多模块需求各模块一份 | `5.4.1-<模块名>-功能覆盖与验收表.md`（单模块固定 .1；多模块：`5.4.<清单序号>-…`） | AI + 人验证 |
+| 5.3 需求覆盖 | `/accept` | 逐需求点核对代码证据/缺口，独立生成需求覆盖报告 | `5.3.<序号>-<功能>-需求覆盖报告.md` | AI + 人验证 |
 
 ### 每一步的规范加载（触发矩阵）
 
@@ -239,22 +233,21 @@ jee-forge/
 | 0.5 存量扫描 | templates/0.5 + 2.1-存量适配；选优化才加载对应规范 |
 | 3.x 方案 | database-standards（DDL/表）+ java-code-standards（分层接口） |
 | 4.1 拆任务 | database-standards（Mapper XML 触发条件） |
-| 4.2 契约测试 | test-standards |
 | 5.1 编码 | java-code-standards + comment-standards + database-standards + build-standards（按生成物） |
 | 5.2 核对 | check-standards skill |
-| 5.3 验收 | comment-standards + 各规范自检清单 |
+| 5.3 需求覆盖 | comment-standards + 各规范自检清单 |
 
 ### 中间产物确认闸门（防跑偏的第零道闸门）
 
-**每一步产出后，AI 必须停下等人工确认，禁止连续执行到下一步**。关键闸门：0.5 优化决策、0.6 可行性评估结论（go/需澄清/kill，命中才走）、0.8 变更影响、0.9 需求构成清单、1.1 功能清单、1.2 核对报告（未确认不进 1.3）、1.3 澄清、2.1 约束、3.x 方案、4.1/4.2、5.1、5.2 核对报告（未确认不进 5.3）、5.3 验收、5.4 功能覆盖与验收表（模块收尾，缺口逐项确认后复跑至全绿）。
+**每一步产出后，AI 必须停下等人工确认，禁止连续执行到下一步**。关键闸门：0.5 优化决策、0.6 可行性评估结论（go/需澄清/kill，命中才走）、0.8 变更影响、0.9 需求构成清单、1.1 功能清单、1.2 核对报告（未确认不进 1.3）、1.3 澄清、2.1 约束、3.x 方案、4.1、5.1、5.2 核对报告（未确认不进 5.3）、5.3 需求覆盖报告。
 
 ### 轻量模式（写个接口/改个功能）
 
-不强制 1.1~4.2 中间产物，直接：加载规范 skill → 全量注释 + 全量日志写码 → `/check-standards` 兜底。**三条硬要求不打折**；同模块已有历史产物改逻辑仍须先 0.8，禁止拿轻量模式绕过产物同步。
+不强制 1.1~4.1 中间产物，直接：加载规范 skill → 全量注释 + 全量日志写码 → `/check-standards` 兜底。**三条硬要求不打折**；同模块已有历史产物改逻辑仍须先 0.8，禁止拿轻量模式绕过产物同步。
 
 ## 规范类技能与核对技能怎么用
 
-除 `ai-dev-workflow` / `bugfix-workflow` 两个流程型技能外，其余 7 个规范/核对技能均为"自动触发"型：Agent 按任务描述匹配 `description` 自动加载对应技能，无需命令。覆盖的触发面：
+除 `ai-dev-workflow` / `bugfix-workflow` / `test-workflow` 三个命令型技能外，其余 6 个规范/核对技能均为"自动触发"型：Agent 按任务描述匹配 `description` 自动加载对应技能，无需命令。覆盖的触发面：
 
 | 想写什么 | Agent 会自动加载 |
 |---|---|
@@ -262,10 +255,10 @@ jee-forge/
 | 任何注释/补注释 | comment-standards |
 | SQL / DDL / MyBatis XML | database-standards |
 | pom / 依赖 / 模块 | build-standards |
-| 单元/契约测试 | test-standards |
+| 按需生成验收测试 | test-workflow |
 | 老项目体检/接入 | legacy-onboarding（建议配合 ai-dev-workflow 0.5 使用） |
 | 交付前兜底核对 | check-standards（可由 `/check-standards` 或自然语言触发） |
-| 修复已有代码 bug | bugfix-workflow（/bugfix：复现→根因→最小修复→防回归→兜底） |
+| 修复已有代码 bug | bugfix-workflow（/bugfix：复现→根因→最小修复→功能回归→兜底） |
 
 ## 安装
 
@@ -312,7 +305,7 @@ cp -r skill/* <你的技能目录>/   # 或只装需要的某几个
 
 ## 仓库由来与维护
 
-- 本仓库由 8 个独立技能仓库聚合而来（ai-dev-workflow / build-standards / java-code-standards / comment-standards / database-standards / test-standards / legacy-onboarding / check-standards），并新增 `bugfix-workflow` 作为家族第 9 技能（缺陷修复纪律）。原仓库内容原样保留为各 `skill/<name>/`，技能名、触发词、内部相对路径均未改动，**用法与单独安装完全一致**。
+- 本仓库由 8 个独立技能仓库聚合而来（ai-dev-workflow / build-standards / java-code-standards / comment-standards / database-standards / test-workflow / legacy-onboarding / check-standards），并新增 `bugfix-workflow` 作为家族第 9 技能（缺陷修复纪律）。**原 8 技能之一的 `test-standards` 已废弃，由 `test-workflow`（按需验收测试工具，`/gen-test`）取代**。原仓库内容原样保留为各 `skill/<name>/`，技能名、触发词、内部相对路径均未改动，**用法与单独安装完全一致**。
 - 价值：跨技能一致的规范变更（如"同表唯一映射"需同步到 java-code-standards + database-standards + legacy-onboarding + check-standards）从"4 个仓库各提交一次"收敛为**单仓库一次 commit 原子落地**。
 - 新增技能：在 `skill/` 下新建 `skill/<新技能名>/SKILL.md`（自包含）即可被扫描识别，无需改动其它技能。
 - **变更纪律（改动任何 skill 前必读）**：新增/修改规范条目、模板、命令或核对项前，先过 [`docs/skill-maintenance-checklist.md`](docs/skill-maintenance-checklist.md)——定位归属技能 → 扫描引用方 → 逐项核对（硬规则必配核对项/软取向不混入/示例模板同步/README·usage-zh·流程总览计数与表述同步）→ 变更后全仓复查，防"改了 A 漏了 B"。

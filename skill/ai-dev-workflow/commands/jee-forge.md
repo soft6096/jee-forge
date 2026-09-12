@@ -1,5 +1,5 @@
 ---
-description: jee-forge 总入口（一键完整开发流程）。触发词：jee-forge/完整流程/从需求到代码/按流程开发/开发模块。用法：/jee-forge <需求或模块描述>。作用：开发场景判定（新项目→0.0、老项目→0.5、已接入规范→1.1、同模块已有产物→0.8）→ 命中风险信号可选先 /feasibility（0.6 需求可行性评估）→ 命中判据先 /req-intake（需求跨多 Java 模块/超大/混栈，非 Java 部分直接忽略）→ 走完整流程（每步产物经人确认闸门）或轻量模式；收尾兜底 /check-standards → 全部功能项通过后 /coverage（5.4 模块覆盖收尾）。
+description: jee-forge 总入口（一键完整开发流程）。触发词：jee-forge/完整流程/从需求到代码/按流程开发/开发模块。用法：/jee-forge <需求或模块描述>。作用：开发场景判定（新项目→0.0、老项目→0.5、已接入规范→1.1、同模块已有产物→0.8）→ 命中风险信号可选先 /feasibility（0.6 需求可行性评估）→ 命中判据先 /req-intake（需求跨多 Java 模块/超大/混栈，非 Java 部分直接忽略）→ 走完整流程（每步产物经人确认闸门）或轻量模式；收尾 /check-standards 后由 /accept 产出 5.3 需求覆盖报告（逐需求点核对、防漏做）。
 ---
 
 # jee-forge 总入口（完整开发流程）
@@ -20,9 +20,9 @@ description: jee-forge 总入口（一键完整开发流程）。触发词：jee
    - **可行性风险信号**（未用过的外部系统/中间件/SDK、选型争议、成本不清新方向）→ 人确认是否先 `/feasibility`（0.6 需求可行性评估，一页速评 go/需澄清/kill）；普通需求直接跳过。
    - **需求入口整形**：需求文档**跨多个 Java 模块 / 体量超大 / 混杂非 Java 服务端内容**（任一命中）→ 先执行 `/req-intake`（按 Java 模块生成模块级需求 md，**非 Java 部分直接忽略**，人确认后各模块进入 1.1）；单模块纯 Java → 直接 1.1。
 4. **按流程执行（推荐分步，每步产物给人确认后进下一步）**：
-   `/feature-list`（1.1）→ `/req-gate`（1.2，强制闸门，未过不得进 1.3）→ `/clarify`（1.3）→ `/constraints`（2.1）→ `/design`（3.x）→ `/task-breakdown`（4.1）+ `/contract-tests`（4.2）→ `/implement`（5.1）→ `/check-standards`（5.2 兜底核对，**5.3 前置硬依赖**）→ `/accept`（5.3）→ **全部功能项通过后 `/coverage`（5.4 功能覆盖与验收表，模块收尾闸门：对照 1.1 逐功能项实查全链路，缺口经人确认处理后复跑至全绿才收尾）**。
+   `/feature-list`（1.1）→ `/req-gate`（1.2，强制闸门，未过不得进 1.3）→ `/clarify`（1.3）→ `/constraints`（2.1）→ `/design`（3.x）→ `/task-breakdown`（4.1）→ `/implement`（5.1）→ `/check-standards`（5.2 兜底核对，**5.3 前置硬依赖**）→ `/accept`（5.3 需求覆盖报告：独立生成、逐需求点核对代码附 `file:line` 证据或标"未找到"、双向核对、语义项标未验证）。
    - 场景特殊时自动挂接前置：0.0 / 0.5 / 0.6（可选）/ 0.8 / 0.9（可选）对应步骤命令。
-5. **轻量模式判断**：若用户只要"写个 XX 接口 / 实现 XX 功能 / 改段代码"（非完整模块）→ 不强制 1.1~4.2，按轻量模式：加载对应规范 skill（java-code-standards / comment-standards / database-standards / build-standards）→ 全量注释 + 全量日志写码 → `/check-standards` 兜底。**同模块已有历史产物时改逻辑 → 仍先 0.8，禁止用轻量模式绕过产物同步。**
+5. **轻量模式判断**：若用户只要"写个 XX 接口 / 实现 XX 功能 / 改段代码"（非完整模块）→ 不强制 1.1~4.1，按轻量模式：加载对应规范 skill（java-code-standards / comment-standards / database-standards / build-standards）→ 全量注释 + 全量日志写码 → `/check-standards` 兜底。**同模块已有历史产物时改逻辑 → 仍先 0.8，禁止用轻量模式绕过产物同步。**
 
 ## 随时兜底
 
@@ -32,5 +32,5 @@ description: jee-forge 总入口（一键完整开发流程）。触发词：jee
 ## 输出 / 完成标准
 
 - 产物按落盘规则进入 `docs/<模块名>V<版本号>-<YYYYMMDDHHMMSS>/`（req-intake 批次产物在 `docs/req-intake-<时间戳>/`）；
-- 完整流程以 **全部功能项 5.3 验收通过 + quickstart 调通证据 + 5.4 功能覆盖与验收表全绿（/coverage，模块收尾闸门）** 为完成标志；
+- 完整流程以 **全部功能项 5.3 需求覆盖无缺口（逐需求点有 `file:line` 证据或明确缺口并处理；Listener/Job 标"未验收"不阻塞）** 为完成标志；
 - 每步产物必须经人确认闸门后才进入下一步；人可在任意一步叫停修正。

@@ -27,11 +27,14 @@
 | compile（默认） | 运行时需要 | 主流依赖 |
 | provided | 容器提供（servlet-api、lombok） | 不打包进产物 |
 | runtime | 仅运行需要（JDBC 驱动） | 编译不需要 |
-| test | 仅测试（JUnit/Mockito/Testcontainers） | 禁 compile 误用 |
+| test | 仅测试（如项目已有测试：JUnit/Mockito 等） | 禁 compile 误用 |
 | optional | 可选特性依赖 | 传递依赖不传播 |
 
-- 测试依赖必须 `test` scope，禁止 `compile` 引入 JUnit/Mockito 等
+- 测试依赖必须 `test` scope，禁止 `compile` 引入 JUnit/Mockito 等（**前提：项目确实有测试**）
 - Lombok 用 `provided` + `optional`（编译期注解处理，不打进产物）
+
+> [!NOTE] 测试依赖为「按需引入」，非默认
+> 本框架**默认不生成 Java 测试代码**——需要运行时行为验证时，用 **test-workflow** 按需生成外部验收工具（真实调用 HTTP/MQ/Job，不引入 Java 测试依赖）。故新项目若无测试需求，可**不引入** JUnit/Mockito/Testcontainers；`test` scope 规则与下方示例仅在"项目已有测试"时适用（如存量项目自带测试）。
 
 ```xml
 <!-- 正例 -->

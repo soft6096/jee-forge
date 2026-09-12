@@ -8,7 +8,7 @@
 
 - **注释没加全（含抽取的 private 方法）** → #1 方法级注释全覆盖：public + private/抽取方法逐个核对 Javadoc（类/字段/方法），无豁免
 - **日志没加全（ServiceImpl 方法零日志）** → #2 方法级日志全覆盖：每个业务方法（含 private 抽取方法）方法体内 ≥1 条 INFO/WARN/ERROR 日志（debug 不算），大段逻辑无 INFO = ❌
-- **中间产物命名/路径不规范** → 核对前先矫正（技术方案 3.x.1 / 接口清单 3.x.2 / 核对报告 5.2.x / 验收报告 5.3.x，去文件名中的任务 ID 前缀 T0xx，移入模块版本目录），防核对扫不到、验收引用断裂
+- **中间产物命名/路径不规范** → 核对前先矫正（技术方案 3.x.1 / 接口清单 3.x.2 / 核对报告 5.2.x / 需求覆盖报告 5.3.x，去文件名中的任务 ID 前缀 T0xx，移入模块版本目录），防核对扫不到、验收引用断裂
 - **check-standards 兜底没触发** → 本 skill 独立成可单独触发的 skill（不依赖 ai-dev-workflow 全流程），description 覆盖"写完代码/改完代码/提交前检查"等触发时机
 
 ## 安装
@@ -23,7 +23,7 @@ cp -r check-standards ~/.agents/skills/
 cp -r check-standards ~/.claude/skills/
 ```
 
-> 建议与配套规范 skill 一起安装：`ai-dev-workflow`、`java-code-standards`、`comment-standards`、`database-standards`、`build-standards`、`test-standards`、`legacy-onboarding`。
+> 建议与配套规范 skill 一起安装：`ai-dev-workflow`、`java-code-standards`、`comment-standards`、`database-standards`、`build-standards`、`test-workflow`、`legacy-onboarding`。
 
 ## 触发方式
 
@@ -36,7 +36,7 @@ cp -r check-standards ~/.claude/skills/
 | 提交前检查 | "提交前过一遍关键规范核对" |
 | 验收复核 | "对照规范核对报告复核" |
 
-**方式 B：配合 ai-dev-workflow 流程**——`/check-standards <项目路径>`（ai-dev-workflow 5.2 规范核对节点 / 5.3 验收时自动触发本 skill）。
+**方式 B：配合 ai-dev-workflow 流程**——`/check-standards <项目路径>`（ai-dev-workflow 5.2 规范核对节点 / 5.3 需求覆盖时自动触发本 skill）。
 
 ## 核对范围（全部核对项无级别之分，任何一项未执行都要与用户确认）
 
@@ -63,7 +63,7 @@ cp -r check-standards ~/.claude/skills/
 | [comment-standards](https://github.com/soft6096/jee-forge/tree/main/skill/comment-standards) | 注释规范（全量注释含 private/抽取方法） |
 | [database-standards](https://github.com/soft6096/jee-forge/tree/main/skill/database-standards) | SQL/表/索引规范 |
 | [build-standards](https://github.com/soft6096/jee-forge/tree/main/skill/build-standards) | 构建/依赖规范 |
-| [test-standards](https://github.com/soft6096/jee-forge/tree/main/skill/test-standards) | 测试规范 |
+| [test-workflow](https://github.com/soft6096/jee-forge/tree/main/skill/test-workflow) | 验收测试工具（按需生成，默认不生成不执行） |
 | [legacy-onboarding](https://github.com/soft6096/jee-forge/tree/main/skill/legacy-onboarding) | 存量项目接入 |
 
 ## License

@@ -76,7 +76,6 @@
 | 写 Listener/Job | listener-standards / job-standards | - |
 | 接口文档 | api-doc-standards | - |
 | 分布式场景 | distributed-standards | concurrency / caching |
-| 写测试代码 | test-standards（全部） | - |
 | 写 SQL/表结构/XML/分页 | database-standards（全部） | - |
 | 性能敏感代码 | 00-common/* + performance | concurrency / caching |
 | 生成完整类 | 00-common/* + 对应类规范 + 对应模板 | 对应示例 |

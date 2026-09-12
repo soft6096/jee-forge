@@ -41,7 +41,7 @@
 
 ### 3. 插件管理
 
-- 常用插件进父 pom `pluginManagement`：`maven-compiler-plugin`、`spring-boot-maven-plugin`、`maven-surefire-plugin`
+- 常用插件进父 pom `pluginManagement`：`maven-compiler-plugin`、`spring-boot-maven-plugin`；`maven-surefire-plugin`（测试执行插件）**按需引入**——仅当项目已有测试需要执行时才管理
 - 统一 Java 版本：`maven.compiler.source/target` 或 `<release>`，全模块一致
 
 ```xml
@@ -52,6 +52,9 @@
 ```
 
 - 资源过滤/打包插件按需启用，不装无用插件（构建提速 + 维护面小）
+
+> [!NOTE] `maven-surefire-plugin` 为按需项
+> 本框架**默认不生成 Java 测试代码**，surefire 只负责执行测试、默认不产生价值——新项目无测试需求时无需在 `pluginManagement` 显式管理它；需要运行时行为验证时用 **test-workflow** 按需生成外部验收工具（不依赖 surefire）。仅当项目已有测试（如存量项目）需要执行时才管理该插件。
 
 ### 4. profile 环境
 

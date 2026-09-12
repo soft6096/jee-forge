@@ -28,7 +28,7 @@ description: 约束 AI 生成构建配置的规范集（Maven pom/依赖管理/�
 ## 与其他 skill 的关系
 
 - **java-code-standards**：Java 代码规范引用本 skill（写 pom/依赖/模块时加载）
-- **database-standards / comment-standards / test-standards / ai-dev-workflow**：无直接引用
+- **database-standards / comment-standards / test-workflow / ai-dev-workflow**：无直接引用
 
 ## 使用要求
 

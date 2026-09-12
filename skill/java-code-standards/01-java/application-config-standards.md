@@ -14,7 +14,7 @@
 |------|------|------|
 | `application.yml` | 公共 | 公共配置 + profile 激活（**不写死环境**，见下） |
 | `application-dev.yml` | 开发 | 本地连接（本机 MySQL/Redis） |
-| `application-qa.yml` | 测试/QA | 测试库连接（CI/契约测试用，数据可重建） |
+| `application-qa.yml` | 测试/QA | 测试库连接（CI/联调用，数据可重建） |
 | `application-online.yml` | 生产 | 上线环境（敏感值用环境变量占位符，不写死） |
 
 **profile 激活方式**（禁止写死具体环境）：
@@ -27,7 +27,7 @@ spring:
 ```
 
 - 禁止 `active: qa` / `active: online` 写死（生产忘指定 profile 会连错库）
-- 契约测试：测试类加 `@ActiveProfiles("qa")` **显式隔离**，不依赖默认值
+- 各环境数据源隔离：qa 库可随时重建，禁止与 dev/online 库混用
 - 生产：部署环境注入 `SPRING_PROFILES_ACTIVE=online`（漏设启动连 dev 库，由部署校验兜底）
 - 本地开发：默认 dev 即可，或 `--spring.profiles.active=dev`
 

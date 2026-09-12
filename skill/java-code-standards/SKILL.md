@@ -1,6 +1,6 @@
 ---
 name: java-code-standards
-description: Java 代码生成规范引擎，约束 AI 生成代码质量（Spring Boot + Spring + MyBatis-Plus 生态）。**只要产出/修改 Java 代码就必须加载本 skill，包括零散直接写码请求（"写个 XX 接口"/"写个 Controller"/"帮我写这段代码"/"实现这个功能"）；任何 Java 代码产物交付前，本 skill 与 comment-standards 都必须已加载**——命名/分层/异常/日志/事务/注入/SQL/安全是硬性要求，生成物不符合即返工。写 Controller/Service/ServiceImpl/Mapper/Entity/DTO/VO/Config/Utils/Exception/Enum/Constants/Converter/Validator/Security/Listener/Job 等类时按生成目标加载 01-java 对应规范；注释规则见 comment-standards skill（**未加注释 = 代码未完成，不得交付**）；涉及 SQL/表设计/索引/MyBatis XML/分页 → database-standards（通用 SQL + MyBatis-Plus 层）；测试代码 → test-standards；构建配置（pom/依赖/模块）→ build-standards；性能/并发/缓存 → 03-performance 规范；完整类 → 04-templates 模板。触发场景：生成 Java 代码、写 Java 类、Spring Boot 接口、MyBatis-Plus Mapper、SQL/建表 DDL、分页查询、认证鉴权、定时任务、消息消费、代码规范审查、无需求文档直接写码请求。WHEN NOT（不要因这些场景触发本 skill）：纯 SQL/DDL/索引 → 只 database-standards；纯注释补全/审查 → 只 comment-standards；纯测试代码 → 只 test-standards；纯 pom/依赖/构建 → 只 build-standards——本 skill 不重复定义，避免多 skill 规则叠加挤占上下文。代码完成后兜底核对见 check-standards（全部核对项，含方法级注释/日志全覆盖）。
+description: Java 代码生成规范引擎，约束 AI 生成代码质量（Spring Boot + Spring + MyBatis-Plus 生态）。**只要产出/修改 Java 代码就必须加载本 skill，包括零散直接写码请求（"写个 XX 接口"/"写个 Controller"/"帮我写这段代码"/"实现这个功能"）；任何 Java 代码产物交付前，本 skill 与 comment-standards 都必须已加载**——命名/分层/异常/日志/事务/注入/SQL/安全是硬性要求，生成物不符合即返工。写 Controller/Service/ServiceImpl/Mapper/Entity/DTO/VO/Config/Utils/Exception/Enum/Constants/Converter/Validator/Security/Listener/Job 等类时按生成目标加载 01-java 对应规范；注释规则见 comment-standards skill（**未加注释 = 代码未完成，不得交付**）；涉及 SQL/表设计/索引/MyBatis XML/分页 → database-standards（通用 SQL + MyBatis-Plus 层）；构建配置（pom/依赖/模块）→ build-standards；性能/并发/缓存 → 03-performance 规范；完整类 → 04-templates 模板。触发场景：生成 Java 代码、写 Java 类、Spring Boot 接口、MyBatis-Plus Mapper、SQL/建表 DDL、分页查询、认证鉴权、定时任务、消息消费、代码规范审查、无需求文档直接写码请求。WHEN NOT（不要因这些场景触发本 skill）：纯 SQL/DDL/索引 → 只 database-standards；纯注释补全/审查 → 只 comment-standards；纯 pom/依赖/构建 → 只 build-standards——本 skill 不重复定义，避免多 skill 规则叠加挤占上下文。代码完成后兜底核对见 check-standards（全部核对项，含方法级注释/日志全覆盖）。
 ---
 
 # Java Code Standards
@@ -39,7 +39,6 @@ description: Java 代码生成规范引擎，约束 AI 生成代码质量（Spri
 | 接口文档（OpenAPI/knife4j） | `01-java/api-doc-standards.md` | controller-standards |
 | 分布式（锁/幂等/事务） | `01-java/distributed-standards.md` | concurrency / caching |
 | 写 pom / 加依赖 / 模块结构 | build-standards（全部） | - |
-| 写测试代码 | test-standards `standards/unit-test-standards.md` + `standards/contract-test-standards.md` | test-standards `standards/test-data-standards.md` |
 | 写 SQL / 建表 DDL | database-standards `standards/sql-standards.md` + `standards/table-design-standards.md` + `standards/index-standards.md` | database-standards `standards/pagination-standards.md` |
 | 写 MyBatis XML | database-standards `mybatis-plus/mybatis-xml-standards.md` | database-standards `standards/sql-standards.md` / `standards/pagination-standards.md` |
 | 分页查询 | database-standards `standards/pagination-standards.md` + `mybatis-plus/pagination-example.md` | database-standards `standards/index-standards.md` |
@@ -104,10 +103,6 @@ description: Java 代码生成规范引擎，约束 AI 生成代码质量（Spri
 ### 分布式（distributed-standards.md）
 - 分布式锁 SETNX + 过期 + 原子释放；写接口幂等（唯一键/状态位）
 - 跨服务调用有超时 + 重试退避 + 熔断；分布式事务多数用最终一致
-
-### 测试（见 test-standards skill）
-- 测试是验收标准：禁改断言/删测试；契约测试覆盖三态（合法/非法/边界）
-- 单测 AAA + 全 mock；数据工厂化；复杂 SQL 用 Testcontainers
 
 ### 性能（03-performance/*）
 - 禁止 N+1：批量查询后内存映射

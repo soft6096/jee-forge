@@ -24,7 +24,7 @@
 
 ### C. 核对兜底（check-standards）
 - [ ] **硬规则必配核对项**：新硬规则是否同步成 check-standards 核对项（33 项体系内新增/修改）？每项是否有可执行的 grep/ast-grep 判定指令？**无自动核对手段的规则=可能被静默跳过**
-- [ ] 核对项是否与 5.2/5.3 报告模板里的"关键规范落地核对表"（templates/5.3-验收报告.md）重复或需同步
+- [ ] 核对项是否与 5.2/5.3 报告模板里的"关键规范落地核对表"（templates/5.3-需求覆盖报告.md）重复或需同步
 
 ### D. 引用方与文档同步
 - [ ] java-code-standards 内部引用（comment/database/test/build 的引用路径、00-common 公共规范与 01-java 各规范）是否仍准确
@@ -48,7 +48,7 @@
 | 改动类型 | 必查位置（除规则自身技能外） |
 | :--- | :--- |
 | 改代码规范（java/comment/database/build/test） | check-standards 核对项 + 05-examples/04-templates + legacy-onboarding + ai-dev-workflow 触发矩阵 + README |
-| 改核对项（check-standards） | 33 项清单 + templates/5.3-验收报告.md 关键规范表 + 各规范技能对应章节 |
+| 改核对项（check-standards） | 33 项清单 + templates/5.3-需求覆盖报告.md 关键规范表 + 各规范技能对应章节 |
 | 改流程（ai-dev-workflow） | SKILL.md（命令表/步骤/落盘/命名/闸门）+ 模块进度模板 + README 流程图 + skill/ai-dev-workflow/docs/流程总览.md + commands/* |
 | 新增模板/命令 | SKILL.md 命令表 + README 命令表 + 模板索引 + 计数（全仓搜旧数字） |
 | 经验固化（experience → 规则） | 归属技能 + check-standards + 引用方 + experience 归档 |

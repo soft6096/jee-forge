@@ -29,7 +29,7 @@
 | [java-code-standards](https://github.com/soft6096/jee-forge/tree/main/skill/java-code-standards) | 配置基线（application-config）/代码基线/安全基线引用 |
 | [database-standards](https://github.com/soft6096/jee-forge/tree/main/skill/database-standards) | 数据基线（schema 一致性/字符集/索引）引用 |
 | [build-standards](https://github.com/soft6096/jee-forge/tree/main/skill/build-standards) | 工程基线（依赖/驱动版本/模块）引用 |
-| [test-standards](https://github.com/soft6096/jee-forge/tree/main/skill/test-standards) | 测试基线引用 |
+| [test-workflow](https://github.com/soft6096/jee-forge/tree/main/skill/test-workflow) | 验收能力（按需生成验收测试工具）引用 |
 | [comment-standards](https://github.com/soft6096/jee-forge/tree/main/skill/comment-standards) | 注释基线（存量补注释工作流）引用 |
 
 ## 使用

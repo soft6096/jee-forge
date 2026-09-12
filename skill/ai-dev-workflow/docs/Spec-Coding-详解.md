@@ -11,6 +11,9 @@
 
 一句话概括流程：**Constitution（宪法）→ Specify（规格）→ Plan（计划）→ Tasks（任务）→ Implement（实现）→ Validate（验证）**，每个阶段产出 Markdown 产物，喂给下一阶段。
 
+> [!NOTE] 与 jee-forge 的适配差异
+> 本文介绍的是 **GitHub Spec Kit 上游方法论**（其实现步骤强制测试先行）。`ai-dev-workflow` 借鉴其"规格驱动 + 门禁 + 可追溯"思想，但**默认不生成任何测试代码**：验证由 **5.3 需求覆盖报告（静态逐需求点核对，防漏做）** 承担，需要运行时行为验证时按需用 `test-workflow` 技能（`/gen-test`）。故本文中"契约测试 / 测试先行 / 让测试变绿"等仅描述上游 Spec Kit，**不代表 jee-forge 流程要求**。
+
 ---
 
 ## 二、六步完整流程与中间产物

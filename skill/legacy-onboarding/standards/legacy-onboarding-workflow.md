@@ -28,7 +28,7 @@
 | 3 | 数据基线 | schema 与 Entity 一致性？旧表遗留？建库脚本字符集？索引缺失？**表→Entity 映射清单？同表重复映射？** | 读 db/schema.sql + 全部 Entity + 关键表 DDL；`grep -rhn '@TableName("[^"]*")' src/main/java` 统计各表映射 Entity 清单 | database-standards `standards/table-design-standards.md`（§3.6 同表唯一映射）+ java-code-standards `01-java/entity-standards.md` §1 |
 | 4 | 代码基线 | 包结构？命名？公共组件重复？异常/日志/事务/幂等防重入？ | 遍历 src/main/java，抽样 2-3 个核心模块 | java-code-standards（SKILL.md 加载矩阵） |
 | 5 | 安全基线 | 鉴权？密钥/密码硬编码？SQL 拼接？文件上传无限制？ | grep 硬编码密码/`${}`/字符串拼接 SQL | java-code-standards `01-java/security-standards.md` |
-| 6 | 测试基线 | 有测试？测试可跑？覆盖核心逻辑？测试质量？ | `mvn test`、统计测试类 vs 业务类 | test-standards |
+| 6 | 验收能力 | 能构建启动？有可调用入口（HTTP/MQ/Job）？是否有现成测试可复用？ | 试启动、列出入口清单、统计现有测试类（如有） | test-workflow（按需生成验收工具） |
 | 7 | 注释基线 | 存量注释完整度（类/字段/方法/步骤注释） | 抽样 3-5 个文件对照自检清单 | comment-standards `standards/comment-standards.md` + `standards/gen-comments-workflow.md` |
 | 8 | 文档基线 | README？接口文档？schema 文档？环境说明？ | 读 docs/、README | — |
 
@@ -42,7 +42,7 @@
 | 级别 | 定义 | 判定标准 | 处理 |
 |:---:|:---|:---|:---|
 | **A 必修** | 影响启动/安全/数据一致性 | 启动报错（连接/字符集/schema/自动填充）、密钥硬编码、SQL 注入、Entity 与 DDL 不一致 | 排期立即整改，整改前不开发新功能 |
-| **B 建议修** | 影响规范一致与可维护性 | 命名不合规、注释缺失、公共组件重复、连接池参数缺、测试缺失 | 排入 backlog，随功能开发逐步整改（改到哪修到哪） |
+| **B 建议修** | 影响规范一致与可维护性 | 命名不合规、注释缺失、公共组件重复、连接池参数缺、验收能力缺失 | 排入 backlog，随功能开发逐步整改（改到哪修到哪） |
 | **C 记录在案** | 存量事实，豁免 | 历史命名风格、无法立即整改的存量设计、一次性迁移成本过高项 | 记录豁免原因，**豁免不扩展到新代码** |
 
 分级示例（真实事故沉淀）：
