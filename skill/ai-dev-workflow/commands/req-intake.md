@@ -60,7 +60,7 @@ description: 需求入口整形（可选前置闸门，开发场景判定之后�
 
 `docs/req-intake-<YYYYMMDDHHMMSS>/`（批次级目录，非模块版本目录）：
 
-- `0.9-需求构成清单与确认.md`（模板 `templates/0.9-需求入口整形.md`）
+- `需求构成清单与确认.md`（模板 `templates/0.9-需求入口整形.md`）
 - `<模块名>-模块需求.md`（每 Java 模块一份，模板 `templates/0.9-模块需求.md`，供该模块 1.1 作为输入引用）
 
 ## 完成标准

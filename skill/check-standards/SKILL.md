@@ -198,8 +198,8 @@ python3 scripts/check_standards.py --project <项目根> --format json --output 
 | 29 | 集合命名 | `grep -rn "List<.*> records\|List<.*> codes\|Set<.*> values" src/main/java` | 集合字段用 xxxList/xxxSet/xxxMap 后缀 |
 | 30 | 魔法值/缓存 key | 抽查常量类 | 无裸魔法值；缓存 key 集中常量定义 |
 | 31 | 公共组件复用 | 扫描 common/util、common/base 与业务重复方法体 | 无 ≥2 处相同方法体（发现 → 提示抽公共，需人工确认） |
-| 32 | 日志参数 NPE（求值安全） | `grep -rn 'log\.\(debug\|info\|warn\|error\)(".*{[^}]*}",' src/main/java` 列出含占位符参数的日志行 → **逐处人工确认**（启发式，命中后需人眼判）：参数是否含 `.getXxx(` / `.getName(` / `.get(0` / 链式 `.getUser().` 等**方法调用**且调用者未先判空 | **日志参数不得写可能 NPE 的调用**：判空前的 `.getId()`、链式取值任一环可能 null、`list.get(0)` 空集合、`map.get(k).xxx()` 值为 null（eager 求值，日志行先炸，判空在后救不了）——见 logging-standards §6；grep 命中参数含方法调用且该对象在日志行之前无判空 → ❌ 附证据；无法确定 → 标注"需人工核对"（禁止凭猜测判 ✅） |
-| 33 | 同表重复映射 | `grep -rhn '@TableName("[^"]*")' src/main/java` 统计各表名出现次数 → 出现 >1 次的表名列清单 | **全项目一张表只允许一个 Entity 映射**（同表唯一映射，见 entity-standards §1）：`@TableName("x")` 出现 >1 次 → ❌ 附证据（重复表名 + 各映射 Entity 类文件:行号）；确认其中 N-1 个无业务引用（grep 引用点）→ 提示删除/收敛 |
+| 32 | 日志参数 NPE（求值安全） | `grep -rn 'log\.\(debug\|info\|warn\|error\)(".*{[^}]*}",' src/main/java` 列出含占位符参数的日志行 → **逐处人工确认**（启发式，命中后需人眼判）：参数是否含 `.getXxx(` / `.getName(` / `.get(0` / 链式 `.getUser().` 等**方法调用**且调用者未先判空 | **日志参数不得写可能 NPE 的调用**：判空前的 `.getId()`、链式取值任一环可能 null、`list.get(0)` 空集合、`map.get(k).xxx()` 值为 null（eager 求值，日志行先炸，判空在后救不了）——见 java-code-standards `00-common/04-logging-standards.md` §6；grep 命中参数含方法调用且该对象在日志行之前无判空 → ❌ 附证据；无法确定 → 标注"需人工核对"（禁止凭猜测判 ✅） |
+| 33 | 同表重复映射 | `grep -rhn '@TableName("[^"]*")' src/main/java` 统计各表名出现次数 → 出现 >1 次的表名列清单 | **全项目一张表只允许一个 Entity 映射**（同表唯一映射，见 java-code-standards `01-java/entity-standards.md` §1）：`@TableName("x")` 出现 >1 次 → ❌ 附证据（重复表名 + 各映射 Entity 类文件:行号）；确认其中 N-1 个无业务引用（grep 引用点）→ 提示删除/收敛 |
 
 > [!WARNING] #1/#2/#3 方法级核对必须逐方法通读（防"长代码丢焦点"）
 > grep/ast-grep 只能列出方法与"哪里有注释/日志"，证明不了"哪个方法缺"。**#1（方法 Javadoc）、#2（方法日志）、#3（步骤注释）必须对本轮生成/修改的每个 Java 文件逐方法通读**：
