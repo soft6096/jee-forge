@@ -46,7 +46,7 @@ cd jee-forge
 
 - **流程管"怎么走"**：需求 → 方案 → 任务 → 编码 → 核对 → 需求覆盖 → 验收（ai-dev-workflow）
 - **规范管"长什么样"**：代码 / 注释 / SQL / 构建 / 测试 各自成域，谁写谁加载
-- **核对管"交付前兜底"**：写完逐项 grep/ast-grep 实际扫描，禁止凭记忆答 ✅
+- **核对管"交付前兜底"**：写完优先跑 `scripts/check_standards.py` 机械扫描（无 Python 回退 grep/ast-grep），禁止凭记忆答 ✅
 
 技能间**不冲突**：每个技能一个独立目录、靠任务描述自动触发、按需加载——单个编码会话只叠加与当前任务匹配的规范，防止规范挤占编码上下文。
 
@@ -99,7 +99,7 @@ jee-forge/
     ├── build-standards/          # 构建规范：SKILL.md + standards/（maven/dependency/module）
     ├── test-workflow/            # 按需验收测试：SKILL.md + commands/（gen-test）+ standards/（case-design/runner-standards）+ assets/（runner）+ templates/（验收测试报告）
     ├── legacy-onboarding/        # 存量接入：SKILL.md + standards/（workflow/report-template）
-    └── check-standards/          # 兜底核对：SKILL.md（33 项核对全部内联）+ README.md
+    └── check-standards/          # 兜底核对：SKILL.md（33 项核对全部内联）+ README.md + scripts/（check_standards.py 机械扫描，纯 stdlib）
 ```
 
 > 各技能内部结构各不相同（有 `standards/`、按主题子目录、或单文件内联）是刻意保留——每份 `SKILL.md` 的"加载矩阵"写死了自己的规范路径，统一目录反而会破坏引用与按需加载。
@@ -124,7 +124,7 @@ jee-forge/
 | `/design` | 3.x | 技术方案（3.0 通用骨架 + Controller/Listener/Job 类型模板） |
 | `/task-breakdown` | 4.1 | 任务拆解（公共组件入 Phase 0.5） |
 | `/implement` | 5.1 | AI 编码（编码完成即停） |
-| `/check-standards` | 5.2 | **兜底核对入口**（强制独立节点：产物命名矫正 → check-standards skill 逐项扫描 → 证据报告 → 用户确认；5.3 前置硬依赖） |
+| `/check-standards` | 5.2 | **兜底核对入口**（强制独立节点：产物命名矫正 → check-standards skill 脚本机械扫描（无 Python 回退 grep/ast-grep）→ 证据报告 → 用户确认；5.3 前置硬依赖） |
 | `/accept` | 5.3 | 需求覆盖报告（逐需求点核对代码证据/缺口，独立生成） |
 | `/gen-comments` | 附加 | 存量代码补注释 |
 | `/gen-logs` | 附加 | 存量代码补全/完善日志 |
@@ -222,7 +222,7 @@ jee-forge/
 | 3.x 技术方案 | `/design` | 每功能项一份方案（3.0 通用骨架 + 类型四段）；含验收场景、公共组件识别；Controller 功能项附带接口清单 | `3.<序号>.1-<功能>-技术方案.md`、`3.<序号>.2-…-接口清单.md` | 人 + AI 辅助 |
 | 4.1 任务拆解 | `/task-breakdown` | 任务拆解（公共组件入 Phase 0.5）+ DDL | `4.1.<序号>-任务拆解.md` | 人 |
 | 5.1 AI 编码 | `/implement` | 按注释/日志规范同步生成注释与日志；编码完成即停 | 代码 + 编码完成报告 | AI |
-| 5.2 规范核对 | `/check-standards` | **强制独立节点**（编码 Agent 不自评）：先矫正产物命名/路径 → 加载 check-standards skill 用 grep/ast-grep 逐项核对**全部 33 项（含方法级注释/日志全覆盖）**，每项附证据 → 未到位先与用户确认再补齐 → 报告获用户确认 | `5.2.<序号>-<功能>-规范核对报告.md` | AI + 人验证 |
+| 5.2 规范核对 | `/check-standards` | **强制独立节点**（编码 Agent 不自评）：先矫正产物命名/路径 → 加载 check-standards skill **优先跑 `scripts/check_standards.py` 机械扫描（无 Python 回退 grep/ast-grep）**核对**全部 33 项（含方法级注释/日志全覆盖）**，每项附证据 → 未到位先与用户确认再补齐 → 报告获用户确认 | `5.2.<序号>-<功能>-规范核对报告.md` | AI + 人验证 |
 | 5.3 需求覆盖 | `/accept` | 逐需求点核对代码证据/缺口，独立生成需求覆盖报告 | `5.3.<序号>-<功能>-需求覆盖报告.md` | AI + 人验证 |
 
 ### 每一步的规范加载（触发矩阵）

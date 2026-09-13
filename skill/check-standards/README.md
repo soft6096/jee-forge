@@ -1,6 +1,6 @@
 # check-standards
 
-> Java 后端代码生成 / 修改完成后的**关键规范兜底自检**（收敛闸门）——用 grep/ast-grep 实际扫描产出，逐项核对关键规范，把没执行到位的项**提示用户确认是否补齐**。
+> Java 后端代码生成 / 修改完成后的**关键规范兜底自检**（收敛闸门）——**优先用仓内脚本 `scripts/check_standards.py`（纯 Python 标准库）本地一次跑完 33 项中可机械判定的部分**（零 token、无需模型逐条 grep + 整篇读 Java 文件），不可用时回退 grep/ast-grep；逐项核对关键规范，把没执行到位的项**提示用户确认是否补齐**。
 
 规范条目多、分散在多个规范 skill（java-code-standards / comment-standards / database-standards / build-standards），AI 编码时容易漏执行。本 skill 是**最后一道兜底**：代码写完或改完后，逐项核对**全部核对项（无级别之分）**——方法级注释/日志全覆盖（public + private/抽取方法逐个核对）、框架/产物、SQL 与数据安全、事务与代码质量、场景化，每项附「文件:行号」证据；**任何一项未执行到位（无级别之分）统一提示用户确认是否补齐**。
 
@@ -10,6 +10,21 @@
 - **日志没加全（ServiceImpl 方法零日志）** → #2 方法级日志全覆盖：每个业务方法（含 private 抽取方法）方法体内 ≥1 条 INFO/WARN/ERROR 日志（debug 不算），大段逻辑无 INFO = ❌
 - **中间产物命名/路径不规范** → 核对前先矫正（技术方案 3.x.1 / 接口清单 3.x.2 / 核对报告 5.2.x / 需求覆盖报告 5.3.x，去文件名中的任务 ID 前缀 T0xx，移入模块版本目录），防核对扫不到、验收引用断裂
 - **check-standards 兜底没触发** → 本 skill 独立成可单独触发的 skill（不依赖 ai-dev-workflow 全流程），description 覆盖"写完代码/改完代码/提交前检查"等触发时机
+
+## 机械核对脚本（零 token 加速）
+
+仓内 `scripts/check_standards.py`（**纯 Python 标准库、无依赖、无网络**）把 33 项中**可机械判定的部分在本地一次跑完**，输出 Markdown / JSON 报告——**替代模型逐条 grep/ast-grep + 整篇读 Java 文件**，模型只读"结论 + 未通过项证据"，语义判断与人确认闸门不变。
+
+```bash
+python3 scripts/check_standards.py --project <项目根> --format json --output .cs-report.json
+python3 scripts/check_standards.py --project <项目根> --path src/main/java/com/x/order   # 指定目录
+python3 scripts/check_standards.py --project <项目根> --changed                          # 只扫本次改动
+python3 scripts/check_standards.py --self-test                                           # 内置夹具自检
+```
+
+- **环境**：Python 3.8+，仅标准库；Windows 用 `py -3` / `python`；未装 Python → 按 SKILL.md「标准检查指令」手工执行（降级，判据完全一致）。
+- **边界**：脚本只做机械扫描，**语义项（#3/#4/#24~#27/#30~#32 等）标 `manual/warn` 附候选证据，绝不假装通过**；默认只读源码，`--fix-renames` 才动 `docs/` 下的 `.md`。
+- **详细参数与 33 项映射**见 [`scripts/README.md`](scripts/README.md)。
 
 ## 安装
 
@@ -50,7 +65,7 @@ cp -r check-standards ~/.claude/skills/
 
 ## 核心原则
 
-1. **实际执行 grep/ast-grep，禁止凭记忆答 ✅**——每项附「文件:行号」证据
+1. **优先运行脚本、实际执行扫描，禁止凭记忆答 ✅**——机械项优先由 `scripts/check_standards.py` 本地跑出（零 token），无 Python 时用 grep/ast-grep 手工执行；每项附「文件:行号」证据
 2. **所有未到位项（无级别之分）统一提示用户确认是否补齐**——人确认后才动手改代码，不自动默默补，不存在"参考项可跳过"
 3. **先判模式**（标准 / 存量适配），选型敏感项按项目约束判定，非规范默认值一刀切
 

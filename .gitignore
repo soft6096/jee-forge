@@ -13,6 +13,10 @@
 target/
 *.class
 
+# Python（check-standards 的 scripts/ 机械核对工具运行产生的缓存）
+__pycache__/
+*.pyc
+
 # 重要：SKILL.md 是本仓库 9 个技能的核心入口，必须全部入库
 # 本机全局忽略（~/.gitignore_global）含 SKILL.md 规则，此处用否定规则强制入库
 !**/SKILL.md
