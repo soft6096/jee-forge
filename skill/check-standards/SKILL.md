@@ -5,7 +5,7 @@ description: Java 后端代码生成/修改完成后的关键规范兜底自检�
 
 # 关键规范自动核对（Check Standards）
 
-Java 代码生成 / 修改完成后的**兜底闸门**：规范条目多、分散在多个规范 skill，AI 编码可能漏执行。本 skill **优先用仓内脚本 `scripts/check_standards.py` 机械扫描产出**（本地一次跑完 33 项中可机械判定的部分，零 token），**不可用时回退 grep / ast-grep 手工执行**；逐项核对关键规范，**禁止凭记忆答 ✅**。
+Java 代码生成 / 修改完成后的**兜底闸门**：规范条目多、分散在多个规范 skill，AI 编码可能漏执行。本 skill **优先用仓内脚本 `scripts/check_standards.py` 机械扫描产出**（本地一次跑完 57 项中可机械判定的部分，零 token），**不可用时回退 grep / ast-grep 手工执行**；逐项核对关键规范，**禁止凭记忆答 ✅**。
 
 > 本 skill 独立可触发，不依赖 ai-dev-workflow 全流程：无论走了完整 spec 流程、还是直接"写个接口/改段代码"，只要产出了 Java 代码，收尾都应加载本 skill 做兜底自检。
 
@@ -13,43 +13,60 @@ Java 代码生成 / 修改完成后的**兜底闸门**：规范条目多、分�
 
 ## 机械核对脚本（`scripts/check_standards.py`）★ 优先执行
 
-本 skill 附带 `scripts/check_standards.py`（**纯 Python 标准库，无依赖、无网络**），把 33 项中**可机械判定的部分在本地一次跑完**，输出结构化报告（Markdown / JSON）。它**替代"逐条跑 grep/ast-grep 指令 + 整篇读 Java 文件"**，大幅减少 token 与轮次；但**不替代判断**——语义项一律标 `manual/warn` 并附证据，**绝不假装通过**。
+本 skill 附带 `scripts/check_standards.py`（**纯 Python 标准库，无依赖、无网络**），把 57 项中**可机械判定的部分在本地一次跑完**，输出结构化报告（Markdown / JSON）。它**替代"逐条跑 grep/ast-grep 指令 + 整篇读 Java 文件"**，大幅减少 token 与轮次；但**不替代判断**——语义项一律标 `manual/warn` 并附证据，**绝不假装通过**。
 
 > [!IMPORTANT] 为什么脚本优先
-> 33 项若由模型逐条执行，每条 = 一次工具调用 + 结果进上下文；且 #1/#2/#3 要求"逐方法通读"，会把整篇 Java 文件读进上下文，**之后每一轮都要重发**——这是 5.2 规范核对最大的 token 消耗源。脚本在本地完成这些机械劳动，模型只读"结论 + 未通过项证据"（建议消费 JSON），语义判断与人确认闸门保持不变。
+> 57 项若由模型逐条执行，每条 = 一次工具调用 + 结果进上下文；且 #1/#2/#3 要求"逐个方法核对"，朴素做法会把整篇 Java 文件读进上下文，**之后每一轮都要重发**——这是 5.2 规范核对最大的 token 消耗源。脚本在本地完成这些机械劳动，**并在证据里给出缺口方法所在行号**，模型**只读报出缺口的那几个方法**（见下方执行方式第 5 步），语义判断与人确认闸门保持不变。
 
 ### 调用（各平台通用）
 
 ```bash
-# 全项目（默认自动探测 Maven src/main/java，多模块亦可）
+# 默认：只扫本次 git 改动文件（AI 刚写完代码的兜底自检主场景）；
+#       取不到 git 改动（无 git / 无改动）→ 自动回退全项目扫描，报告里写明原因
 python3 scripts/check_standards.py --project <项目根>
 
-# 只扫指定目录 / 只扫本次改动 / 只跑部分核对项
+# 强制全项目扫描（全量体检时才用；只扫改动时不要加）
+python3 scripts/check_standards.py --project <项目根> --all
+
+# 只扫指定目录 / 只扫本次改动（显式，同默认）/ 只跑部分核对项
 python3 scripts/check_standards.py --project <项目根> --path src/main/java/com/x/order
 python3 scripts/check_standards.py --project <项目根> --changed
 python3 scripts/check_standards.py --project <项目根> --only 1,2,14,18
 
 # 机读 JSON（推荐：模型只消费 JSON，省上下文）
-python3 scripts/check_standards.py --project <项目根> --format json --output .cs-report.json
+python3 scripts/check_standards.py --project <项目根> --format json --output .cs-before.json
+
+# 修复后核对：断言原未通过项已修（红→绿）+ 无任何项回退（只读，不写文件）
+python3 scripts/check_standards.py --project <项目根> --format json --output .cs-after.json
+python3 scripts/check_standards.py --verify --before .cs-before.json --after .cs-after.json
+
+# 只看 57 项判据摘要（判 manual/warn 项用；免读 references/checklist.md 全篇）
+python3 scripts/check_standards.py --explain
 ```
+
+> **判据随结论走**：报告的 JSON 每项带 `judgment` 字段、Markdown 的 `manual/warn` 项下方直接打印「判据: …」——模型判定人工项时**优先用报告里的判据**，只有判据不足以判定才翻 `references/checklist.md` 对应项（全篇 19KB，不要整篇读）。
 
 > **Windows**：用 `py -3 scripts/check_standards.py ...` 或 `python scripts/check_standards.py ...`（无 `python3` 时）。脚本兼容 GBK 控制台与 CRLF。
 > **路径**：`scripts/` 相对**本 skill 目录**（不是项目根）——agent 用 skill 的 base directory 拼**绝对路径**执行，例如 `python3 /…/skills/check-standards/scripts/check_standards.py --project <项目根>`；`--project` 才指向被测项目。
+> **成本护栏**：运行前会打印「本次范围 N 个文件，预计约 X 秒」；**范围 > 2000 个文件且未显式 `--all` 会直接拒绝（exit 2）**——曾因大范围扫描跑 55 分钟才被中止，故"全量"必须是显式选择；> 1000 会告警建议改用默认范围；范围 ≥200 文件时每 10 项打一次进度。
+> **默认范围 = 本次改动**：不传 `--path`/`--all` 时先取 git 改动文件（只扫其中的 `.java`），报告与 stderr 会打印「默认只扫本次改动文件；如需全量请加 `--all`」；取不到改动 → **回退全项目**并写明「未检测到 git 改动，已回退全项目扫描」（不会返回 0 文件假绿）。
+> **AI 流程下不要用大范围 `--path`**：别传整个项目根或整模块（如 `--path src/main/java`、`--path <模块根>`）——会扫出几百上千个存量文件，又慢又把存量违规混进本次核对结论（曾发生传整模块扫 849~4874 个文件的极慢事故）。本次只改了某目录 → 传该目录；改了什么就扫什么；要全量体检才显式 `--all`。
+> **`--path` 注意**：相对路径按**当前工作目录**解析，解析不到时会回退按 `--project` 再解析一次（CWD 与 `--project` 不同目录时建议直接用绝对路径）；若最终扫到 **0 个 `.java`**，脚本按**用法错误 `exit 2`** 退出并**不产出核对结论**——杜绝「空范围 → 全项 PASS」的假绿。
 > **前置**：需要 Python 3.8+（仅标准库）。未安装 Python 的环境走下方「无 Python 时的降级」。
 
 ### 脚本已判定 vs 仍需人工（决定模型做什么）
 
 | 类别 | 处理方式 |
 | :--- | :--- |
-| **可机械判定**（#1/#2/#5~#23/#28/#29/#33 等） | 脚本给 `pass/fail` + `文件:行号` 证据 → 模型**直接引用**，不必重跑 |
-| **语义/启发式**（#3 步骤注释质量、#4 翻译式注释、#24 防重入、#25 幂等、#26 上传、#27 写接口幂等、#30 魔法值、#31 公共组件复用、#32 日志 NPE） | 脚本给 `manual/warn` + 候选证据 → **模型必须按下方判定标准逐项判定**，不得跳过 |
+| **可机械判定**（#1/#2/#5~#23/#28/#29/#33/#34~#37 等） | 脚本给 `pass/fail` + `文件:行号` 证据 → 模型**直接引用**，不必重跑 |
+| **语义/启发式**（#3 步骤注释质量、#4 翻译式注释、#24 防重入、#25 幂等、#26 上传、#27 写接口幂等、#30 魔法值、#31 公共组件复用、#32 日志 NPE） | 脚本给 `manual/warn` + 候选证据 + **判据摘要**（`judgment`）→ **模型必须按判据逐项判定**，不得跳过 |
 | **选型敏感**（#6/#7/#8/#20） | 脚本读 2.1 约束 / 0.5 扫描判定；无约束文件时标 `manual`，由模型/人确认口径 |
-| **#1/#2 的"半覆盖 / 长方法逐段"** | 脚本按行数启发式标 `manual` → 模型对被标记的方法**逐方法通读**确认 |
+| **#1/#2 的"半覆盖 / 长方法逐段"** | 脚本按行数启发式标 `manual` 并给出方法起止行 → 模型**只读该方法的行区间**确认（勿通读整篇文件） |
 | **#9 接口清单等产物命名** | 命名不合规（非 `3.x.2-…`）脚本标 `manual` → 走第 0 步矫正后确认 |
 
 ### 无 Python 时的降级（不影响判据）
 
-未安装 Python 的环境：**按下方「检查项清单」的「标准检查指令」逐条手工执行**（原生 grep/ast-grep），流程与判据完全一致，只是不省 token。**脚本是加速器，不是必需品。**
+未安装 Python 的环境：**按 `references/checklist.md` 的「标准检查指令」逐条手工执行**（原生 grep/ast-grep），流程与判据完全一致，只是不省 token。**脚本是加速器，不是必需品。**
 
 ---
 
@@ -64,6 +81,9 @@ python3 scripts/check_standards.py --project <项目根> --format json --output 
 | 判定不了 | 停止并向人确认项目模式（禁止按默认值猜） | — |
 
 **选型敏感核对项**（接口文档 / 日志框架 / SQL 在 XML / 统一返回体，即下方 #6/#7/#8/#20）：判定标准随项目模式变化，**先读 2.1 约束 / 0.5 扫描再判**；其余核对项（SQL 注释 / DDL 注释 / 事务 / 注入 / WHERE / 密码 / 分页 / 方法注释 / 方法日志等）为通用硬规则，任何模式都按规范判定。
+
+> [!IMPORTANT] 模式覆盖（用户显式指定优先）
+> 若用户 prompt **明确出现**「按 check-standards 规范 / 按 jee-forge 代码规范 / 按本框架规范 / 按本规范（体系）」等措辞 → **强制按标准模式（本规范）判定**（传 `--mode standard`），**覆盖存量适配默认**——即"按本框架规范"处理老代码，而非迁就老约定。
 
 ## 第 0 步：中间产物命名与路径矫正（核对前必做，防核对扫不到/验收引用断裂）
 
@@ -95,14 +115,16 @@ python3 scripts/check_standards.py --project <项目根> --format json --output 
 ## 执行方式（核心规则）
 
 0. **先矫正产物命名与路径**（执行规则见「第 0 步」章节）：运行脚本时其"第 0 步"会扫描 docs/ 中间产物并给出命名/路径矫正清单（**默认只检测**，`--fix-renames` 才落盘）→ 清单先向用户确认 → 矫正 → 再进入核对
-1. **先界定核对范围**（见下「核对范围界定」章节，执行前先读）：用户指定目录 → `--path`；用户说"某次需求/本轮改动" → `--changed`；无指定 → 全项目（脚本按此确定扫描范围；手工降级时把每条检查指令的路径替换为界定后的范围）
-2. **先判模式**（见上"模式判定与核对依据"）：脚本自动读 2.1 约束 / 0.5 扫描判定（`--mode` 可覆盖；无约束文件时按规范默认并在报告注明），确定选型类核对项（#6/#7/#8/#20）的判定口径
-3. **运行脚本取得机械核对结果（优先执行）**：
-   `python3 scripts/check_standards.py --project <项目根> --format json --output .cs-report.json`
-   ——脚本已代跑全部「标准检查指令」并给出 `文件:行号` 证据；模型**不再逐条重跑**。**无 Python 环境 → 按下方「检查项清单」的「标准检查指令」手工执行（降级），流程与判据完全一致。**
-4. **模型只处理脚本标 `manual/warn` 的项**：按「检查项清单」的「判定标准」逐项人工判定（尤其 #3/#4/#24~#27/#30~#32；#1/#2 被标"半覆盖/长方法"的方法需**逐方法通读**）。机械 `pass/fail` 项直接引用脚本证据——不重复劳动，也不跳过人工项
-5. **所有未执行到位项（全部核对项，无级别之分）→ 统一列进「待用户确认清单」，一起向用户确认是否执行补齐**：把全部 ❌/⚠️ 项证据汇总展示给人（**一次确认，不是逐项反复问**），问"以下 N 项未执行到位，是否按规范补齐？"——用户逐项确认（补齐 / 跳过）→ 确认"补齐"的项才执行补齐 → 重跑脚本该项 + 新证据（已修复）；补齐后仍无法满足 → **升级人工核对**（标注"需人工核对"）。**禁止未经用户确认自动改代码、禁止把任何 ❌ 项当"不重要"默默跳过**（补齐全过程有人的确认闸门）
-6. 输出《关键规范核对报告》（可用脚本 `--format md` 直接生成，再补上模型对 `manual` 项的判定结论；标注核对范围；逐项 ✅/❌ + 证据 + 待用户确认清单），并落盘 5.2 规范核对报告（规范核对结论以本报告为准，不再汇总进 5.3 需求覆盖报告）
+1. **先界定核对范围 + 强制确认**（见下「核对范围界定」）：用户指定目录 → `--path <该目录>`（**只传改动的那个目录，别传整模块/项目根**）；用户说"本轮改动/某次需求" → `--changed`（或不传范围参数，脚本默认即本轮改动）；用户明确要"全项目体检查存量" → `--all`；**未指定 → 先停下问用户"本次处理新代码（本轮改动）还是全项目？"（问时按 global-rules 给【AI 推荐】：无特殊说明推荐「新代码/本轮改动」+ 理由），确认后才定范围，禁止默认全量扫**
+2. **先判模式（可被用户覆盖）**（见上"模式判定与核对依据"）：默认读 2.1 约束 / 0.5 扫描（`--mode auto`）；**若用户 prompt 明确说"按 check-standards / jee-forge / 本框架 / 本规范"→ 强制 `--mode standard`**（覆盖存量适配）；无约束文件时按规范默认并在报告注明
+3. **【可选】先跑格式自动修**：检测项目 `pom.xml` 是否含 `spotless-maven-plugin`——有 → **经用户确认**后 `mvn spotless:apply`（自动修格式类，秒级）；无 → 跳过，并在报告标注"无 Spotless：格式类由 #34~#37 核对 + AI 修"
+4. **运行脚本取得机械核对结果（优先执行）**：
+   `python3 scripts/check_standards.py --project <项目根> [--changed | --path <范围> | --all] [--mode standard] --format json --output .cs-report.json`
+   ——脚本已代跑全部「标准检查指令」（全部 57 项：#1~#33 语义 + #34~#57 格式·命名·卫生）并给出 `文件:行号` 证据；模型**不再逐条重跑**。
+   **范围默认只扫本次 git 改动**（报告 `scope=changed` 并注明「如需全量请加 `--all`」）；无改动 → 自动回退全项目并在报告写明；**AI 流程中不要传大范围 `--path`**（整模块/项目根 → 扫出大量存量文件、极慢且污染本次结论）。**无 Python 环境 → 按 `references/checklist.md` 的「标准检查指令」手工执行（降级），流程与判据完全一致。**
+5. **模型只处理脚本标 `manual/warn` 的项**：按脚本输出的 `judgment` 判据摘要逐项人工判定（尤其 #3/#4/#24~#27/#30~#32/#38）；摘要不足以判定时再查 `references/checklist.md` 对应项的「判定标准」。对脚本报出缺口的方法（含 #1/#2 的"半覆盖/长方法"），**只读该方法本身**——用 Read 的 `offset/limit` 精确读其起止行（脚本证据已给行号）；**仅在必要时扩读**（如判断方法名表意需看类/接口声明；长方法自然读得多）。**不要通读整篇文件**——缺口之外的内容与本项判定无关，读了只是白烧 token。机械 `pass/fail` 项直接引用脚本证据——不重复劳动，也不跳过人工项
+6. **所有未执行到位项（全部核对项，无级别之分）→ 统一列进「待用户确认清单」，一起向用户确认是否执行补齐**：把全部 ❌/⚠️ 项证据汇总展示给人（**一次确认，不是逐项反复问**），问"以下 N 项未执行到位，是否按规范补齐？"——用户逐项确认（补齐 / 跳过）→ 确认"补齐"的项才执行补齐 → 用 `--verify --before <改前>.json --after <改后>.json` 核对（脚本断言：该项已修 + **无任何项回退**，防"改 A 坏 B"）；补齐后仍无法满足 → **升级人工核对**（标注"需人工核对"）。**禁止未经用户确认自动改代码、禁止把任何 ❌ 项当"不重要"默默跳过**（补齐全过程有人的确认闸门）
+7. 输出《关键规范核对报告》（可用脚本 `--format md` 直接生成，再补上模型对 `manual` 项的判定结论；标注核对范围与模式；**分两栏：✅ 已自动修（Spotless）/ ⚠️ 待人工·AI 修**；逐项 ✅/❌ + 证据 + 待用户确认清单），并落盘 5.2 规范核对报告（规范核对结论以本报告为准，不再汇总进 5.3 需求覆盖报告）
 
 > [!WARNING] 证据强制 + 用户确认闸门（所有未执行到位项一体确认，无级别之分）
 > **每项必须给出实际执行的 grep/ast-grep 命令与命中行**。只写 ✅/❌ 无证据 = 未核对，打回重跑。禁止"没做就声称做了"。
@@ -114,10 +136,14 @@ python3 scripts/check_standards.py --project <项目根> --format json --output 
 
 **三种情况（按用户意图二选一，默认走第 1 种）：**
 
+> [!IMPORTANT] 范围必须先与用户确认（强制）
+> 若用户**未明确**指定范围（既没说"扫 xx 目录/模块"，也没说"本轮改动/某次需求"）→ **先停下问用户**：「本次处理 **新代码（本轮改动）** 还是 **全项目**？」——确认后才执行，**禁止默认全量扫**。老项目尤其要问（避免把存量历史违规一次性全算进来）。
+
 ### 情况 A：用户指定目录/模块/包（最常见——"对 xx 目录扫"/"检查 order 模块"）
 
 - 用户给出路径 → **所有检查指令的路径 = 该路径**（`grep ... <指定路径>`，如 `src/main/java/com/xxx/order`），**不是全项目**
 - 报告标注「核对范围：<指定路径>」；范围外的文件不扫、不计入 ❌
+- 脚本对应 `--path <该路径>`（**只传真正改动的那个目录**；传整模块/项目根会扫出大量存量文件、极慢且污染本次结论）
 - 若指定的是模块名（如"order 模块"）而非路径 → 先定位模块根目录（`src/main/java/**/order`），确认后按该路径扫
 
 ### 情况 B：用户说"某次需求/这次改的代码/本轮改动"
@@ -130,83 +156,43 @@ python3 scripts/check_standards.py --project <项目根> --format json --output 
 - 报告区分两类 ❌：**本次改动引入的**（阻塞，进待确认清单）/ **存量历史违规**（非本次引入——仅提示"存量问题：N 处（非本次引入，可另行 gen-comments/gen-logs 处理）"，不阻塞本次）
 - 无法确定改动范围（git 不可用/用户也说不清）→ 停下问用户，不猜
 
-### 情况 C：用户无指定、仅"跑一下 check-standards"（全项目体检）
+### 情况 C：用户无指定、仅"跑一下 check-standards"（本次改动自检）
 
-- 扫整个项目（指令默认路径）；报告将 **本次改动 vs 存量** 分列（有 git 时按 B 的 diff 区分；无 git 时标注"全量体检，未区分存量/新增"）
+- **脚本默认即本条**：不传范围参数 → 只扫本次 git 改动文件（报告 `scope=changed`，并提示「如需全量请加 `--all`」）；无 git 改动 → 自动回退全项目，报告写明原因
+- 报告将 **本次改动 vs 存量** 分列（有 git 时按 B 的 diff 区分；无 git 时标注"全量体检，未区分存量/新增"）
+- 用户明确要"全项目体检/看存量问题" → 加 `--all`（此时才是全项目扫描）
 
 > [!NOTE] 范围界定与产物矫正的关系
 > 第 0 步（产物矫正）针对 docs/ 中间产物；本界定针对 src/ 代码核对范围。两者独立：即使只扫某目录代码，docs/ 产物矫正仍按全量执行（防验收引用断裂）。
 
-## 检查项清单
+## 检查项清单（57 项）
 
-**所有核对项无级别之分**：每项都是硬规则，未执行到位一律 ❌ 进待用户确认清单（与用户确认补齐/跳过），不存在"HIGH 必改 / INFO 可跳过"之分。选型敏感项 ⚠️ 按 2.1 约束/0.5 扫描口径判定（见"模式判定"），其余按规范。**核对范围按上「核对范围界定」执行**（指定目录 / 本轮改动 git diff / 全项目三种）——**下方指令中的 `src/main/java` 等路径均为示例，实际执行时替换为界定后的范围**。
+**所有核对项无级别之分**：每项都是硬规则，未执行到位一律 ❌ 进待用户确认清单（不存在"HIGH 必改 / INFO 可跳过"之分）。选型敏感项 ⚠️ 按 2.1 约束 / 0.5 扫描口径判定（见"模式判定"）。**核对范围按上「核对范围界定」执行**（指定目录 / 本轮改动 / 全项目）。
 
-### 一、方法与日志覆盖（新代码必核——注释/日志必须覆盖所有代码，含抽取的 private 方法）
+**57 项的判定标准以 `references/checklist.md` 为单一事实源**（手工执行指令 grep/ast-grep 原文也只在该文件）：
 
-> 痛点根源：ServiceImpl 方法无日志、Controller 抽取的 private 方法大段无注释无日志，旧核对只扫 public 方法所以漏检。**本组按"方法级"机械核对，public + private + 抽取方法全覆盖**。
+- **正常流程（有 Python）**：跑 `scripts/check_standards.py`，每项输出**自带判据摘要**（JSON 的 `judgment` 字段；`--explain` 可打印全部 57 条）→ 模型按摘要判 `manual/warn` 项，**不需要读 checklist.md**
+- **降级流程（无 Python）或判据摘要不够时**：读 `references/checklist.md` 逐条手工执行，判据与脚本完全一致
 
-| # | 核对项 | 标准检查指令（实际执行） | 判定标准（全部满足才 ✅） |
-| :---: | :--- | :--- | :--- |
-| 1 | **方法级注释全覆盖** | ast-grep 列全部方法节点（`$MOD $RET $NAME($$$) { $$$ }`，含 public/private/protected/静态），逐个核对方法声明上方有 `/** */` Javadoc | **所有方法（public + private + 抽取方法）有 Javadoc**：功能 + @param/@return 写业务含义；Controller/ServiceImpl 抽取出来的私有辅助方法同样必须有类注释 + 方法 Javadoc（按 comment-standards 全量注释规则，无豁免） |
-| 2 | **方法级日志全覆盖** | grep/ast-grep 逐个检查方法体内是否含 `log.info`/`log.warn`/`log.error` 调用（**`log.debug` 不算——线上不输出，视为无日志**）；再对含日志的方法判断是否覆盖关键阶段 | **Controller/Service/ServiceImpl/Job/Listener 的每个业务方法（public + private 抽取方法）方法体内 ≥1 条 INFO/WARN/ERROR 业务日志**（入口入参摘要 / 关键分支 / 结果返回前）；**方法内无任何 INFO/WARN/ERROR（即使有 log.debug）→ ❌**；大段逻辑（≥10 行）无 INFO/WARN/ERROR → ❌；方法含 ≥2 个业务阶段（查库/状态变更/循环组装等）但仅开头 1 条日志、中间关键逻辑无 INFO → ❌（"半覆盖"漏网形态）；纯 getter/setter/单行透传可豁免（注明豁免原因）；异常处 ERROR 带堆栈 |
-| 3 | 步骤注释 + WHY | `grep -rn "// 1\." src/main/java` 抽查 + **逐方法通读（长方法必须逐段核对，不得只 grep 命中数判 ✅）** | 方法体 ≥2 个逻辑步骤有编号注释（`// 1.` `// 2.`…，覆盖到方法最后一段逻辑）；**方法内每个业务段（查询/校验/循环/状态变更/组装）都有步骤注释，不得前半段有注释后半段裸奔**；复杂逻辑有 `// WHY:`；无 ≥10 行连续逻辑代码零注释；长方法（>20 行）逐段核对（含方法后半段）；深层嵌套（≥3 层）分支前有注释（存量模式同样要求） |
-| 4 | 禁翻译式注释 | 抽查注释 | 无逐行翻译式注释；注释写业务含义非复述代码 |
-| 5 | 全类 @Slf4j + 无 System.out | `grep -rln "@Slf4j" src/main/java`；`grep -rn "System.out" src/main/java` | Controller/Service/ServiceImpl/Job/Listener 全类 @Slf4j，无 System.out、无散落 Logger 混用 |
+| 组 | 核对项 | 组内要点 |
+| :--- | :---: | :--- |
+| 一 方法与日志覆盖 | #1~#5 | 方法级 Javadoc / 日志全覆盖（含 private 与抽取方法）；**debug 不算日志**；步骤注释覆盖到最后一段 |
+| 二 框架与产物 ⚠️ | #6~#9 | 接口文档 / 日志框架 / SQL 在 XML / 接口清单产物；选型敏感项按 2.1·0.5 口径判 |
+| 三 SQL 与数据安全 | #10~#13 | SQL 注释、DDL 字段 COMMENT、无 `${}` 拼接、UPDATE/DELETE 必带 WHERE |
+| 四 事务与代码质量 | #14~#23 | rollbackFor、构造器注入、分层边界、Entity 不外泄、异常、统一返回体、分页上限、校验 message 具体 |
+| 五 场景化 | #24~#33 | Job/Listener/上传/幂等/敏感信息/集合命名/魔法值/公共组件/日志参数 NPE/同表唯一映射（按类型文件存在才核） |
+| 六 代码格式 | #34~#38 | 行尾空白与 Tab、行宽 ≤120、连续空行、import 卫生、空格 |
+| 七 命名与书写卫生 | #39~#44 | 命名大小写/形式、类与文件结构、修饰符与数组写法、字符串 equals、无 TODO/FIXME、变量命名 |
+| 八 缩进与规模 | #45~#49 | 缩进 4 空格倍数、import 顺序、方法 ≤100 行、参数 ≤7、equals/hashCode 成对 |
+| 九 书写细项 | #50~#57 | catch 形参名、静态变量命名、空格、成员空行、一行一声明/一语句、package/import 不换行、花括号 |
 
-### 二、框架与产物（选型敏感 ⚠️ 按项目模式判定）
+> **分组的用法**：分组仅作文档组织用途，**引用核对项一律用 `#id`（1~57）**。脚本内部另有分组划分（如 `#44 变量命名` 单列一组），**不要求与本文档组号对齐**——改口径或写报告时只认 id，不认组号。
 
-| # | 核对项 | 标准检查指令（实际执行） | 判定标准（全部满足才 ✅） |
-| :---: | :--- | :--- | :--- |
-| 6 | 接口文档支持 ⚠️ | `grep -n "springdoc\|knife4j\|springfox\|swagger" pom.xml`；`grep -rln "@Tag\|@Operation\|@Api\|@ApiOperation" src/main/java`；`grep -rln "@Schema\|@ApiModelProperty" src/main/java` | 按 2.1 选型/老约定判定（springdoc → 依赖 + @Tag/@Operation + @Schema；老项目 Swagger2 → @Api 体系；纯 Apifox 按老约定） |
-| 7 | 日志框架支持 ⚠️ | `ls src/main/resources/logback*.xml src/main/resources/log4j2*.xml`；`grep -n "log4j2\|logback" pom.xml` | 按 2.1 选型/老约定判定：Logback → logback-spring.xml 存在（控制台+滚动+环境级 level）；Log4j2 → 配置存在且无 logback 并存 |
-| 8 | SQL 在 XML ⚠️ | `grep -rn "@Select\|@Insert\|@Update\|@Delete\|<script>" src/main/java`；`ls src/main/resources/mapper/*.xml` | 标准模式：无注解 SQL，手写 SQL 全在 XML，namespace 一致；老项目按 0.5 数据访问约定判定 |
-| 9 | JSON 入参/出参产物 | `ls docs/*/3.*.2-接口清单（前后端通用）.md` | 每个 Controller 功能项的接口清单已生成，URL+方法+JSON 入参/出参（成功/失败）与方案一致 |
-
-### 三、SQL 与数据安全
-
-| # | 核对项 | 标准检查指令（实际执行） | 判定标准（全部满足才 ✅） |
-| :---: | :--- | :--- | :--- |
-| 10 | SQL 注释（方案内） | `grep -rn "CREATE TABLE\|SELECT \|INSERT INTO\|UPDATE " docs/*/3.*.1-技术方案*.md` | 方案《数据模型与 SQL》所有 SQL 带注释：DDL 每字段 COMMENT；查询/DML 每条 `--`（用途+归属 Mapper+关键条件） |
-| 11 | DDL 字段注释 | `grep -A 25 "CREATE TABLE" src/main/resources/db/schema.sql docs/*/3.*.1-技术方案*.md` | CREATE TABLE 每个字段带 COMMENT + 表级 COMMENT；无裸字段 |
-| 12 | SQL 注入 | `grep -rn '\${' src/main/resources/mapper/*.xml`；`grep -rn '"SELECT \|"INSERT \|"UPDATE \|"DELETE ' src/main/java` | XML 无 `${}` 拼接值；Java 无字符串拼接 SQL；无 apply()/last() 传用户输入 |
-| 13 | UPDATE/DELETE 带 WHERE | `grep -rn -i "^[[:space:]]*UPDATE \|^[[:space:]]*DELETE " src/main/resources/mapper/*.xml` | 所有 UPDATE/DELETE 带 WHERE（无 WHERE → ❌） |
-
-### 四、事务与代码质量
-
-| # | 核对项 | 标准检查指令（实际执行） | 判定标准（全部满足才 ✅） |
-| :---: | :--- | :--- | :--- |
-| 14 | 事务 rollbackFor | `grep -rn "@Transactional" src/main/java` | 每个 @Transactional 均带 rollbackFor = Exception.class |
-| 15 | 构造器注入 | `grep -rn "@Autowired" src/main/java`（应为空） | 无字段注入；统一构造器注入（@RequiredArgsConstructor + final）（存量模式按老约定） |
-| 16 | 分层边界 | `grep -rn "Mapper" src/main/java/*/controller/*.java`；Controller 方法体抽查 | Controller 不注入 Mapper、不写业务逻辑/SQL/事务 |
-| 17 | Entity 不暴露 | `grep -rn "Entity\|@TableName" src/main/java/*/controller/*.java` | 接口出入参用 DTO/VO，不暴露 Entity |
-| 18 | 异常处理 | `grep -rn "throw new RuntimeException\|catch (.*) {}" src/main/java` | 无裸 RuntimeException；无空 catch 吞异常 |
-| 19 | 命名单字母/泛称 | `grep -rn "catch (.* e)\|throw new.*(.* e)" src/main/java` | 无单字母类名、异常参数非 e、无泛称变量 |
-| 20 | 统一返回体 ⚠️ | `grep -rn "Map<" src/main/java/*/controller/*.java`；`grep -rln "class R\b\|class Result\b" src/main/java` | 按 2.1/老约定：Controller 返回 Response<T>/PageResult<T>（存量按老返回体），无 Map 裸返回 |
-| 21 | 密码加密 | `grep -rn -i "md5\|sha1\|DigestUtils" src/main/java` | 无 MD5/SHA1 存密码（用 BCrypt 慢哈希） |
-| 22 | 分页上限 | `grep -rn "pageSize\|PageQuery" src/main/java/*/dto/*.java` | 分页入参 pageSize 有 @Max/上限校验 |
-| 23 | 校验 message 具体性 | `grep -rn 'message = "' src/main/java` 抽查 + 定位 @NotBlank/@NotNull/@Size/@Pattern/@Min/@Max 等校验注解 | **校验注解 message 必须具体**：含业务字段名 + 具体原因（"手机号不能为空"/"数量必须大于0"）；**禁止无字段语义笼统文案**——message 值若仅由笼统词构成（前缀 `参数/数据/输入/请求/字段/内容/信息` × 结论 `不合法/错误/非法/无效/有误/不正确/格式不对`，含标点变体）→ ❌ 附证据（文件:行号 + message 原文） |
-
-### 五、场景化 + 其余项（对应类型文件存在时才核 / 人工项）
-
-| # | 核对项 | 触发条件 / 检查指令 | 判定标准 |
-| :---: | :--- | :--- | :--- |
-| 24 | Job 防重入 + 批处理 | `grep -rln "@Scheduled" src/main/java` 有命中 | 有分布式锁/状态位防重入；批处理带 LIMIT；无长事务 |
-| 25 | Listener 幂等 + 死信 | `grep -rln "@RabbitListener\|@KafkaListener" src/main/java` 有命中 | 消费幂等；重试有上限 + 死信队列；无 catch 静默 |
-| 26 | 文件上传安全 | `grep -rln "MultipartFile" src/main/java` 有命中 | 扩展名+MIME 双白名单；UUID 重命名；大小限制 |
-| 27 | 写接口幂等（HTTP） | Controller 存在 POST/PUT 写接口 | 写接口有幂等方案（唯一键/令牌/Redis SETNX），幂等键与业务同事务（自动 grep 难查 → 人工抽查标"需人工核对"） |
-| 28 | 敏感信息进日志 | `grep -rn "password\|token\|secret" src/main/java` | 日志/异常/响应不含密码/token 明文（命中核对是否脱敏） |
-| 29 | 集合命名 | `grep -rn "List<.*> records\|List<.*> codes\|Set<.*> values" src/main/java` | 集合字段用 xxxList/xxxSet/xxxMap 后缀 |
-| 30 | 魔法值/缓存 key | 抽查常量类 | 无裸魔法值；缓存 key 集中常量定义 |
-| 31 | 公共组件复用 | 扫描 common/util、common/base 与业务重复方法体 | 无 ≥2 处相同方法体（发现 → 提示抽公共，需人工确认） |
-| 32 | 日志参数 NPE（求值安全） | `grep -rn 'log\.\(debug\|info\|warn\|error\)(".*{[^}]*}",' src/main/java` 列出含占位符参数的日志行 → **逐处人工确认**（启发式，命中后需人眼判）：参数是否含 `.getXxx(` / `.getName(` / `.get(0` / 链式 `.getUser().` 等**方法调用**且调用者未先判空 | **日志参数不得写可能 NPE 的调用**：判空前的 `.getId()`、链式取值任一环可能 null、`list.get(0)` 空集合、`map.get(k).xxx()` 值为 null（eager 求值，日志行先炸，判空在后救不了）——见 java-code-standards `00-common/04-logging-standards.md` §6；grep 命中参数含方法调用且该对象在日志行之前无判空 → ❌ 附证据；无法确定 → 标注"需人工核对"（禁止凭猜测判 ✅） |
-| 33 | 同表重复映射 | `grep -rhn '@TableName("[^"]*")' src/main/java` 统计各表名出现次数 → 出现 >1 次的表名列清单 | **全项目一张表只允许一个 Entity 映射**（同表唯一映射，见 java-code-standards `01-java/entity-standards.md` §1）：`@TableName("x")` 出现 >1 次 → ❌ 附证据（重复表名 + 各映射 Entity 类文件:行号）；确认其中 N-1 个无业务引用（grep 引用点）→ 提示删除/收敛 |
-
-> [!WARNING] #1/#2/#3 方法级核对必须逐方法通读（防"长代码丢焦点"）
-> grep/ast-grep 只能列出方法与"哪里有注释/日志"，证明不了"哪个方法缺"。**#1（方法 Javadoc）、#2（方法日志）、#3（步骤注释）必须对本轮生成/修改的每个 Java 文件逐方法通读**：
+> [!WARNING] #1/#2/#3 方法级核对必须逐个方法核对（防"长代码丢焦点"，但不必通读整篇文件）
+> grep/ast-grep 只能列出方法与"哪里有注释/日志"，证明不了"哪个方法缺"，所以**哪个方法缺必须真读那个方法**。**#1（方法 Javadoc）、#2（方法日志）、#3（步骤注释）必须对本轮生成/修改的每个 Java 文件逐个方法核对**——脚本已给出缺口方法的行号，**只读报出缺口的那几个方法**（用 Read 的 `offset/limit` 读其起止行），**不要通读整篇文件**（缺口之外的内容与本项判定无关，通读整篇 = 白烧 token）：
 > - **抽取方法（private 辅助方法）是漏注释/漏日志高发区**——Controller 里抽出的校验/转换方法、ServiceImpl 里抽出的组装/查询方法，逐个核对有方法 Javadoc、方法体内 ≥1 条 INFO/WARN/ERROR 日志
 > - **#2 防"半覆盖"漏网**：方法开头 1 条 `log.debug`（或 1 条 INFO）但中间 10+ 行查库/循环/组装逻辑无 INFO/WARN/ERROR → ❌（debug 不算日志，方法须关键阶段有 INFO）
-> - 从方法第一行读到最后一行，重点盯方法后半段与深层嵌套分支；长方法（>20 行）逐段确认编号注释覆盖到最后一步、每段业务逻辑都有日志
-> - 禁止只数 grep 命中数判 ✅；未通读的方法按"未核对"处理，打回重核
+> - 禁止只数 grep 命中数判 ✅；未核到的方法按"未核对"处理，打回重核
 
 ## 输出格式
 
@@ -214,24 +200,24 @@ python3 scripts/check_standards.py --project <项目根> --format json --output 
 
 ```text
 === 关键规范核对报告（5.2.<功能项序号>-<功能名>-规范核对报告）===
-项目: <路径>    时间: <时间戳>    模式: 标准/存量适配    核对范围: 全项目 / <指定目录> / 本轮改动（git diff 界定）
+项目: <路径>    时间: <时间戳>    模式: 标准/存量适配    核对范围: 本轮改动（默认）/ <指定目录> / 全项目（--all）
 产物矫正记录（第 0 步，如无 → "无，命名/路径已合规"）:
   docs/3.1-服务产品分类与BANNER-技术方案.md → docs/<模块>V<版本>-<时间戳>/3.1.1-服务产品分类与BANNER-技术方案.md（漏 .1）
   docs/<模块>…/5.2-T02-01-前台商品列表与详情-规范核对报告.md → …/5.2.6-前台商品列表与详情-规范核对报告.md（补功能序号 + 去任务 ID）
-[✅] 1 方法级注释全覆盖   证据: UserController.java:12 login 有 Javadoc；OrderServiceImpl.java:8 buildVO private 有 Javadoc（逐方法通读 12/12 方法全通过）
+[✅] 1 方法级注释全覆盖   证据: UserController.java:12 login 有 Javadoc；OrderServiceImpl.java:8 buildVO private 有 Javadoc（只读脚本报出的缺口方法，12/12 方法全通过）
 [❌] 2 方法级日志全覆盖   证据: OrderServiceImpl.java:33 getOrderList 方法体无 log 调用（零日志）；:41 buildOrderVO private 无日志
 [✅] 5 全类 @Slf4j        证据: 全类 @Slf4j、无 System.out
 [❌] 14 事务 rollbackFor  证据: OrderServiceImpl.java:45 @Transactional（无 rollbackFor）
 [❌] 27 敏感信息进日志    证据: AuthController.java:60 log.info 含明文 token
 ...
-结论: 33 项核对项：通过 X / 未通过 Y
+结论: 57 项核对项：通过 X / 未通过 Y
 ⚠️ 待用户确认清单（全部未执行到位项，一次确认，无级别之分）:
   #2 方法级日志全覆盖、#14 事务 rollbackFor、#27 敏感信息进日志 …
   （逐项：补齐/跳过）
 ```
 
 - 报告**落盘**：`docs/<模块名>V<版本号>-<YYYYMMDDHHMMSS>/5.2.<功能项序号>-<功能名>-规范核对报告.md`（走 ai-dev-workflow 流程时，**功能项序号与 3.x 技术方案一致**，如功能项 6 → `5.2.6-前台商品列表与详情-规范核对报告.md`，文件名禁止拼任务 ID；**独立触发无 docs 目录时** → 直接在对话里输出报告 + 提示用户是否落盘）；全部核对项结论（含 #1 方法注释 / #2 方法日志逐方法核对结果）以**本 5.2 规范核对报告**为准（不再汇总进 5.3 需求覆盖报告）
-- **全部未执行到位项（无级别之分）→ 一次向用户确认是否补齐**（展示证据 → 人逐项确认补齐/跳过 → 确认的才执行 → 重跑）
+- **全部未执行到位项（无级别之分）→ 一次向用户确认是否补齐**（展示证据 → 人逐项确认补齐/跳过 → 确认的才执行 → 重跑）；**每项按 global-rules 给【AI 推荐】**：本次改动引入的推荐补齐，存量历史违规推荐另行处理/本次跳过 + 理由
 
 > [!NOTE] 两个"人"的动作区分
 > - **用户确认闸门**（执行前）：发现未执行到位项 → 向用户确认"是否补齐"（补齐/跳过），确认后 AI 才动手——决定"要不要补"
@@ -241,14 +227,15 @@ python3 scripts/check_standards.py --project <项目根> --format json --output 
 ## 完成标准
 
 - [ ] **产物命名与路径已矫正**（第 0 步）：docs/ 中间产物命名符合规范（技术方案 3.x.1 / 接口清单 3.x.2 / 核对报告 5.2.x / 需求覆盖报告 5.3.x，无任务 ID 前缀），路径在模块版本目录下；矫正清单已向用户确认，矫正记录写入报告
-- [ ] **优先已运行 `scripts/check_standards.py`**（脚本优先）：机械项结论 + `文件:行号` 证据取自脚本，未逐条重复劳动；脚本标 `manual/warn` 的项已按「判定标准」逐项人工判定（含 #1/#2 半覆盖/长方法方法的逐方法通读）；**无 Python 环境已按「标准检查指令」手工降级执行并留证据**
-- [ ] **核对范围已界定**（指定目录 / 本轮改动 git diff / 全项目三种之一），报告已标注核对范围；检查指令路径 = 界定后范围（非全项目默认）
+- [ ] **优先已运行 `scripts/check_standards.py`**（脚本优先）：机械项结论 + `文件:行号` 证据取自脚本，未逐条重复劳动；脚本标 `manual/warn` 的项已按「判定标准」逐项人工判定（含 #1/#2 半覆盖/长方法——**只读脚本报出缺口的那几个方法**，未通读整篇文件）；**无 Python 环境已按「标准检查指令」手工降级执行并留证据**
+- [ ] **核对范围已界定**（**脚本默认 = 本轮改动（git diff）**；指定目录 → `--path <目录>`；全项目 → `--all` 三种之一），报告已标注核对范围；检查指令路径 = 界定后范围（非全项目默认）；**未传整模块/项目根的 `--path`**
 - [ ] **模式已判定**（标准/存量适配，读对应约束文件；无约束文件时已在报告中注明口径），选型敏感项（#6/#7/#8/#20）按项目约束/老项目约定判定，非规范默认值一刀切
-- [ ] **全部 33 项核对项已实际执行检查指令并附证据（文件:行号）**——含 #1 方法级注释（public + private + 抽取方法）、#2 方法级日志、#3 步骤注释、#23 校验 message 具体性、#32 日志参数 NPE、#33 同表重复映射
-- [ ] **#1/#2/#3 已逐方法通读核对**（本轮生成/修改的每个 Java 文件从方法头读到方法尾，重点核过 private/抽取方法、方法后半段与深层嵌套分支的注释与日志覆盖，未只凭 grep 命中数判 ✅）
+- [ ] **全部 57 项核对项已实际执行检查指令并附证据（文件:行号）**——含 #1 方法级注释（目标类全量 + 其余类显式 public 方法）、#2 方法级日志、#3 步骤注释、#23 校验 message 具体性、#32 日志参数 NPE、#33 同表重复映射、#34~#57 代码格式·命名·书写卫生
+- [ ] **#1/#2/#3 已逐个方法核对**（脚本报出缺口的每个方法从方法头读到方法尾，重点核过 private/抽取方法、方法后半段与深层嵌套分支的注释与日志覆盖；**只读缺口方法、未通读整篇文件**；未只凭 grep 命中数判 ✅）
 - [ ] **所有未执行到位项（无级别之分）已一起向用户确认是否补齐**——确认"补齐"的项已补齐重跑通过；用户选择"跳过"或补齐后仍 ❌ → 已标注"需人工核对"（不静默吞掉）
 - [ ] 核对报告已输出（走流程时落盘 `docs/<模块名>V<版本号>-<YYYYMMDDHHMMSS>/5.2.<功能项序号>-<功能名>-规范核对报告.md`）
 - [ ] 全部核对项结果已在 5.2 规范核对报告中落盘（规范核对结论以本报告为准）
+- [ ] **范围与格式行为已落实**：处理范围已先与用户确认（新代码/全项目）；模式已按 prompt 覆盖规则判定；（项目配了 Spotless 时）已执行或提示格式自动修；报告按「已自动修 / 待人工·AI 修」两栏呈现
 
 ## 与其他 skill 的关系
 

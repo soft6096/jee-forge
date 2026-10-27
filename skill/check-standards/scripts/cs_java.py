@@ -214,7 +214,9 @@ def git_changed_java_files(project):
     """
     files = set()
     # 1) 工作区/暂存区未提交改动
-    out = _run_git(project, ["status", "--porcelain"])
+    # WHY 加 -uall：git status 默认把「全新未跟踪目录」折叠成 `?? dir/` 一条，取不到里面的
+    # 文件；AI 生成新包/新模块时正属这种情形，会让「默认只扫改动」退化成全项目扫描。
+    out = _run_git(project, ["status", "--porcelain", "-uall"])
     if out is not None:
         for line in out.splitlines():
             if not line.strip():
@@ -325,6 +327,59 @@ def mask_source(src):
     return "".join(out)
 
 
+def strip_comments(src):
+    """移除注释，但**保留字符串/字符字面量原样**，用于不受注释干扰的字面匹配。
+
+    WHY: 与 :func:`mask_source` 的区别是本函数保留字符串内容。像「是否声明了扩展名白名单」
+    这类判定，证据常常就在字符串里（``endsWith(".xlsx")``）；而注释里顺带提到 ``.xlsx``
+    不构成证据。注意：本函数不保留行号（注释被整体删除），只适用于按文件判定的场景。
+    """
+    out = []
+    i = 0
+    n = len(src)
+    state = _MASK_CODE
+    while i < n:
+        c = src[i]
+        if state == _MASK_CODE:
+            if c == "/" and i + 1 < n and src[i + 1] == "/":
+                state = _MASK_LINE_COMMENT
+                i += 2
+                continue
+            if c == "/" and i + 1 < n and src[i + 1] == "*":
+                state = _MASK_BLOCK_COMMENT
+                i += 2
+                continue
+            out.append(c)
+            if c == '"':
+                state = _MASK_STRING
+            elif c == "'":
+                state = _MASK_CHAR
+            i += 1
+        elif state == _MASK_LINE_COMMENT:
+            if c == "\n":
+                state = _MASK_CODE
+                out.append(c)
+            i += 1
+        elif state == _MASK_BLOCK_COMMENT:
+            if c == "*" and i + 1 < n and src[i + 1] == "/":
+                i += 2
+                state = _MASK_CODE
+                continue
+            if c == "\n":
+                out.append(c)
+            i += 1
+        else:  # 字符串 / 字符字面量：原样保留
+            if c == "\\" and i + 1 < n:
+                out.append(src[i:i + 2])
+                i += 2
+                continue
+            out.append(c)
+            if (state == _MASK_STRING and c == '"') or (state == _MASK_CHAR and c == "'"):
+                state = _MASK_CODE
+            i += 1
+    return "".join(out)
+
+
 def strip_annotations(text):
     """移除注解（``@Name`` 与 ``@Name(...)`` 带平衡括号的参数），保留其余文本。"""
     out = []
@@ -379,6 +434,7 @@ class MethodInfo(object):
         "is_constructor", "javadoc", "decl_line", "body_open_line",
         "body_close_line", "body_start_line", "body_end_line",
         "body_orig_lines", "body_masked_lines", "class_name",
+        "nested_type_depth",
     )
 
     def __init__(self):
@@ -397,6 +453,10 @@ class MethodInfo(object):
         self.body_orig_lines = []
         self.body_masked_lines = []
         self.class_name = ""
+        # 外层「类型声明」大括号层数（顶层类型所在层已扣除）：0 = 顶层类型直接成员；
+        # >0 = 位于嵌套 class/interface/enum 或匿名类体内。用于区分"接口自身方法"与
+        # "接口内嵌套类的同名方法"，避免把嵌套类成员误判为接口成员。
+        self.nested_type_depth = 0
 
     def has_body(self):
         return self.body_close_line >= self.body_open_line > 0
@@ -527,6 +587,24 @@ def _looks_like_method_sig(seg):
     }
 
 
+# '{' 之前片段是否开启「类型体」（类/接口/枚举/record）
+_TYPE_BODY_SEG_RE = re.compile(r"\b(?:class|interface|enum|record)\s+[A-Za-z_$][\w$]*")
+# 匿名类体：片段的最后一段是 `new Xxx(...)`，且其前不含 ')'(避免把 if(...)/调用实参误判)
+_ANON_BODY_SEG_RE = re.compile(
+    r"^\s*(?:[\w$.<>,\[\]]+\s+|=)*new\s+[\w$.<>,\[\]]*\s*\([^()]*\)\s*$")
+
+
+def _opens_type_body(seg):
+    """判断 '{' 之前的片段是否开启一个类型体（命名类型或匿名类）。
+
+    用途：区分「顶层类型的直接成员」与「嵌套类型/匿名类体内的成员」，
+    避免把嵌套类的成员误判为外层接口/类的成员。
+    """
+    if _TYPE_BODY_SEG_RE.search(seg):
+        return True
+    return bool(_ANON_BODY_SEG_RE.match(seg))
+
+
 def parse_java(path):
     """解析一个 Java 文件为 :class:`ClassInfo`。
 
@@ -569,17 +647,21 @@ def parse_java(path):
             elif ch == "{":
                 if paren_depth > 0:
                     continue
-                meta = _looks_like_method_sig(masked[stmt_start:pos])
-                stack.append(("method" if meta is not None else "block", meta, stmt_start))
+                seg = masked[stmt_start:pos]
+                meta = _looks_like_method_sig(seg)
+                stack.append(("method" if meta is not None else "block",
+                              meta, stmt_start, _opens_type_body(seg)))
                 stmt_start = pos + 1
             elif ch == "}":
                 if paren_depth > 0:
                     continue
                 if stack:
-                    ctx_kind, meta, seg_begin = stack.pop()
+                    ctx_kind, meta, seg_begin, _is_type = stack.pop()
                     if ctx_kind == "method":
+                        # 外层类型体层数减 1（顶层类型自身那一层不算嵌套）
+                        nested = max(0, sum(1 for e in stack if e[3]) - 1)
                         _finalize_method(info, lines, masked_lines, masked,
-                                         line_starts, meta, seg_begin, pos)
+                                         line_starts, meta, seg_begin, pos, nested)
                 stmt_start = pos + 1
             elif ch == ";":
                 if paren_depth == 0:
@@ -606,12 +688,13 @@ def _first_decl_pos(masked):
 
 
 def _finalize_method(info, lines, masked_lines, masked_text, line_starts, meta,
-                     seg_begin, close_pos):
-    """根据扫描结果补全 MethodInfo（javadoc / 行号 / 方法体行）。"""
+                     seg_begin, close_pos, nested_type_depth=0):
+    """根据扫描结果补全 MethodInfo（javadoc / 行号 / 方法体行 / 嵌套类型深度）。"""
     def pos_to_line(pos):
         return bisect.bisect_right(line_starts, pos)
 
     mi = MethodInfo()
+    mi.nested_type_depth = nested_type_depth
     mi.class_name = info.name
     mi.name = meta["name"]
     mi.sig = meta["sig"]

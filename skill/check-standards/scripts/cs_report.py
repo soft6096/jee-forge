@@ -34,6 +34,17 @@ def _evidence_text(item, max_findings):
     return text
 
 
+def _registry_line(reg):
+    """渲染「规范加载清单」独立小节的单行结果（不占 #1~#57 编号）。"""
+    sym = STATUS_SYMBOL.get(reg.get("status"), "[?]")
+    note = reg.get("note", "")
+    manifest = reg.get("manifest", "")
+    text = "规范加载清单：%s" % (manifest if manifest else note)
+    if manifest and note:
+        text += "（%s）" % note
+    return "%s %s" % (sym, text)
+
+
 def render_md(report, max_findings=20):
     """把报告 dict 渲染为 Markdown 文本。"""
     lines = []
@@ -60,6 +71,12 @@ def render_md(report, max_findings=20):
         lines.append("模式说明: %s" % report["mode_note"])
         lines.append("")
 
+    reg = report.get("registry_manifest")
+    if reg:
+        lines.append("--- 规范加载清单（独立小节，不占 #1~#57 编号）---")
+        lines.append(_registry_line(reg))
+        lines.append("")
+
     for item in report.get("items", []):
         sym = STATUS_SYMBOL.get(item.get("status"), "[?]")
         ev = _evidence_text(item, max_findings)
@@ -69,6 +86,10 @@ def render_md(report, max_findings=20):
             line += "   说明: %s" % note
         line += "   证据: %s" % ev
         lines.append(line)
+        # WHY 只对需人工项附判据：pass/fail 项已由脚本定论，附判据纯属噪音；
+        # 而 manual/warn 项正是模型要动手判的，判据直接给在这里可免读 references/checklist.md
+        if item.get("status") in ("manual", "warn") and item.get("judgment"):
+            lines.append("    判据: %s" % item["judgment"])
 
     summary = report.get("summary", {})
     total = sum(summary.get(k, 0) for k in ("pass", "fail", "warn", "manual", "skip"))
