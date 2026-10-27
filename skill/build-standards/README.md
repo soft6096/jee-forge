@@ -31,10 +31,10 @@ AI 生成构建配置常见问题：版本散落子模块、依赖 scope 乱用�
 
 ```bash
 # 方式一：整仓 clone（opencode/Codex 支持 skill/<name> 嵌套识别，更新 = git pull）
-git clone git@github.com:soft6096/jee-forge.git ~/.agents/skills/jee-forge
+git clone https://github.com/soft6096/jee-forge.git ~/.agents/skills/jee-forge
 
 # 方式二：只装本技能到你的 agent 技能目录（Claude Code：~/.claude/skills/；opencode：~/.agents/skills/）
-git clone git@github.com:soft6096/jee-forge.git /tmp/jee-forge && cp -r /tmp/jee-forge/skill/build-standards ~/.agents/skills/build-standards
+git clone https://github.com/soft6096/jee-forge.git /tmp/jee-forge && cp -r /tmp/jee-forge/skill/build-standards ~/.agents/skills/build-standards
 ```
 
 ## 使用
@@ -46,7 +46,3 @@ git clone git@github.com:soft6096/jee-forge.git /tmp/jee-forge && cp -r /tmp/jee
 - 规范文件按「强制规则 → 反例/正例 → 自检清单」结构编写
 - 构建规范本体只在 `standards/` 维护，其他 skill 引用不复制
 - 改规范后更新 SKILL.md 加载矩阵与速查
-
-## 许可
-
-MIT

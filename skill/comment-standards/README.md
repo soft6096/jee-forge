@@ -30,10 +30,10 @@ AI 生成注释常见问题：类/字段/方法注释漏写、@param 只重复�
 
 ```bash
 # 方式一：整仓 clone（opencode/Codex 支持 skill/<name> 嵌套识别，更新 = git pull）
-git clone git@github.com:soft6096/jee-forge.git ~/.agents/skills/jee-forge
+git clone https://github.com/soft6096/jee-forge.git ~/.agents/skills/jee-forge
 
 # 方式二：只装本技能到你的 agent 技能目录（Claude Code：~/.claude/skills/；opencode：~/.agents/skills/）
-git clone git@github.com:soft6096/jee-forge.git /tmp/jee-forge && cp -r /tmp/jee-forge/skill/comment-standards ~/.agents/skills/comment-standards
+git clone https://github.com/soft6096/jee-forge.git /tmp/jee-forge && cp -r /tmp/jee-forge/skill/comment-standards ~/.agents/skills/comment-standards
 ```
 
 ## 使用
@@ -45,7 +45,3 @@ git clone git@github.com:soft6096/jee-forge.git /tmp/jee-forge && cp -r /tmp/jee
 - 规范文件按「强制规则 → 反例/正例 → 自检清单」结构编写，新增规则保持此结构
 - 注释规范本体只在 `standards/comment-standards.md` 维护，其他 skill 引用不复制
 - 改规范后更新 SKILL.md 加载矩阵与速查
-
-## 许可
-
-MIT

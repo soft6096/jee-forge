@@ -70,6 +70,41 @@
 - ❌ 重复引入同一依赖不同版本（依赖收敛，见 dependency 规范）
 - ❌ 构建产物（target/）提交 git
 
+### 6. 代码格式化（Spotless，推荐）
+
+生成项目如要与团队编码风格（4 空格 / K&R / 120 列）保持一致，推荐引入 **Spotless** + **Eclipse JDT formatter**：一次格式化即可消除大量格式类违规（缩进、空格、空行、行尾、import 顺序 / 未使用 import、花括号风格）。
+
+- 插件版本走父 pom `pluginManagement`；格式化配置随 jee-forge 提供：`java-code-standards/assets/eclipse-formatter.xml`（使用时拷入项目，如 `config/eclipse-formatter.xml`）
+- **消除的格式类**：缩进 / 空格 / 空行 / 行尾空白（`trimTrailingWhitespace`）/ import 顺序 / 未使用 import / 花括号风格（Eclipse formatter）
+- `<importOrder/>` 用 Spotless 默认顺序；如需严格对齐 jee-forge（static → 自身 → 第三方），改为 `<importOrder><order>…</order></importOrder>`（语法见 Spotless 文档）
+- 提交前 / CI：`mvn spotless:apply`（自动修）、`mvn spotless:check`（校验不通过则构建失败）
+- 可选 `<ratchetFrom>` 只格式化分支改动文件，避免全量重排
+
+> [!NOTE] 未实测提示
+> 本机（维护者环境）未跑 Maven，以上插件片段与 formatter 配置**未在真实项目实测**；接入后请先在项目里跑一次 `mvn spotless:apply` 确认（`eclipse-formatter.xml` 的 `profiles version` 需与本机 Spotless 的 Eclipse 版本兼容）。
+
+```xml
+<plugin>
+    <groupId>com.diffplug.spotless</groupId>
+    <artifactId>spotless-maven-plugin</artifactId>
+    <version>${spotless.version}</version>
+    <configuration>
+        <java>
+            <eclipse>
+                <file>${project.basedir}/config/eclipse-formatter.xml</file>
+            </eclipse>
+            <removeUnusedImports/>
+            <forbidWildcardImports/>
+            <importOrder/>
+            <trimTrailingWhitespace/>
+        </java>
+    </configuration>
+</plugin>
+```
+
+> [!NOTE] 许可与分发
+> Spotless 为 Apache-2.0；Eclipse JDT formatter 引擎在构建时由 Spotless 拉取。本仓**只提供自写的格式化配置**（`assets/eclipse-formatter.xml`），**不随仓分发任何工具 jar**（Checkstyle / SpotBugs / Eclipse 引擎均不打包），无再分发义务；仅以文字引用规则名称与工具名。
+
 ## 反例 / 正例
 
 ```xml
@@ -97,3 +132,4 @@
 - [ ] Java 版本全模块一致
 - [ ] 环境差异用 profile
 - [ ] target/ 未提交 git
+- [ ] 如需格式化：已配 Spotless + jee-forge `assets/eclipse-formatter.xml`，`mvn spotless:apply` 通过；未打包任何外部工具 jar

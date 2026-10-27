@@ -61,10 +61,10 @@ python3 <模块>/tests/runner/runner.py --cases <模块>/tests/<功能项>.cases
 
 ```bash
 # 方式一：整仓 clone（opencode/Codex 支持 skill/<name> 嵌套识别，更新 = git pull）
-git clone git@github.com:soft6096/jee-forge.git ~/.agents/skills/jee-forge
+git clone https://github.com/soft6096/jee-forge.git ~/.agents/skills/jee-forge
 
 # 方式二：只装本技能到你的 agent 技能目录（Claude Code：~/.claude/skills/；opencode：~/.agents/skills/）
-git clone git@github.com:soft6096/jee-forge.git /tmp/jee-forge && cp -r /tmp/jee-forge/skill/test-workflow ~/.agents/skills/test-workflow
+git clone https://github.com/soft6096/jee-forge.git /tmp/jee-forge && cp -r /tmp/jee-forge/skill/test-workflow ~/.agents/skills/test-workflow
 ```
 
 ## 维护
@@ -72,7 +72,3 @@ git clone git@github.com:soft6096/jee-forge.git /tmp/jee-forge && cp -r /tmp/jee
 - 用例设计准则在 `standards/case-design.md`，执行器准则在 `standards/runner-standards.md`，其他技能引用不复制
 - 通用执行器在 `assets/runner/` 维护单一版本
 - 改规范后更新 `SKILL.md` 与本 README
-
-## 许可
-
-MIT

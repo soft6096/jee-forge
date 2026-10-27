@@ -36,10 +36,10 @@ AI 生成 SQL 常见问题：N+1 查询、SELECT *、索引失效写法、深分
 
 ```bash
 # 方式一：整仓 clone（opencode/Codex 支持 skill/<name> 嵌套识别，更新 = git pull）
-git clone git@github.com:soft6096/jee-forge.git ~/.agents/skills/jee-forge
+git clone https://github.com/soft6096/jee-forge.git ~/.agents/skills/jee-forge
 
 # 方式二：只装本技能到你的 agent 技能目录（Claude Code：~/.claude/skills/；opencode：~/.agents/skills/）
-git clone git@github.com:soft6096/jee-forge.git /tmp/jee-forge && cp -r /tmp/jee-forge/skill/database-standards ~/.agents/skills/database-standards
+git clone https://github.com/soft6096/jee-forge.git /tmp/jee-forge && cp -r /tmp/jee-forge/skill/database-standards ~/.agents/skills/database-standards
 ```
 
 > 手动方式：从 GitHub 下载 jee-forge 仓库，把 `skill/database-standards` 目录放入你的 agent skills 目录（Claude Code：`~/.claude/skills/`；opencode：`~/.agents/skills/` 或 `~/.config/opencode/skills/`）。
@@ -53,7 +53,3 @@ git clone git@github.com:soft6096/jee-forge.git /tmp/jee-forge && cp -r /tmp/jee
 - 规范文件按「强制规则 → 反例/正例 → 自检清单」结构编写，新增规则保持此结构
 - 写操作类规则进 `data-safety.md`（最高优先级）
 - 改规范后更新 SKILL.md 加载矩阵与速查
-
-## 许可
-
-MIT
