@@ -89,7 +89,23 @@
 
 统一用 emoji，不用文字「已完成/未完成」混搭。
 
-### 1.6 完成标准自检（每个产物末尾）
+### 1.6 澄清问题卡片（1.3 澄清 / 0.6 待澄清，勾选式）
+
+**1.3 澄清问题清单不用宽表格**，改「顶部索引表 + 逐题卡片」：索引表给全局扫描与勾选进度，卡片给"一句话 → 背景 → 要确认 → 结论勾选"的阅读节奏，便于逐条手工操作（勾选、批注、署名）。
+
+> 卡片排版示例（标题/背景/要确认/结论/处理人各段怎么写）见 `references/通用-样式规范-图表与卡片示例.md` 第二节。
+
+
+- 卡片标题：`### #<序号> 🔴/🟡 <问题短标题>`（🔴 阻塞 / 🟡 一般）；**序号与索引表一致，不重排**（其他产物会按 `#N` 引用）
+- **候选答案按实际情况给 1~N 条，不硬凑条数**；首选 `**【AI 推荐】**` + 理由，必要时补 `其它（请手写）：`
+- **【AI 推荐】项不加勾选框（硬性格式）**：推荐项作为第一条**直接以 `- **【AI 推荐】…** —— 理由：…` 起行，前面不得出现 `[ ]` / `[x]`**；它是 AI 的结论展示，不是待勾选项。需人勾选的只有其它候选方向与「其它（请手写）」
+- **背景详略按风险定**：阻塞项写清文档出处与冲突点，一般项 2~3 行即可
+- 勾选 `[x]` = 已定案 / `[ ]` = 未定案；每条卡片末尾固定留 `处理人 / 日期：` 空行供署名
+- 顶部索引表列固定为：`# ｜ 涉及功能项 ｜ 类型/来源 ｜ 问题（一句话） ｜ 状态`，状态用 `✅` / `🔲`；阻塞项另用 `[!WARNING] 阻塞项` callout 汇总
+- **0.6 可行性评估的「待澄清问题」同款卡片**（`#### Q# 🟡 …`，随 §6 结论小节）：问题通常 1~3 条，**不建索引表**（超过 5 条再加）
+- **生成后必须主动提醒用户两种定案方式**（含文件路径），不闷头逐条问答：① 在对话里逐条选择；② 直接打开 md 勾选（**更推荐**）；md 内用 `[!TIP] 两种定案方式` callout 写明
+
+### 1.7 完成标准自检（每个产物末尾）
 
 ```markdown
 ## 完成标准自检
@@ -103,185 +119,35 @@
 
 ---
 
-## 二、技术方案专属样式（调用骨架 + mermaid 图）
+## 二、技术方案专属样式（调用骨架 + mermaid 图）→ 按需读
 
-### 2.1 调用骨架（分层调用）——核心逻辑必配
+**调用骨架**（核心逻辑必配：分层 + `→` 调用标注 + 中文编号步骤 + Mapper 内联 SQL，不写实现代码）是硬要求，形态示例、mermaid 时序图/流程图完整配置与渲染注意见
 
-核心逻辑用 **text 代码块**展示「入口 → Service → Mapper」分层调用，函数体用中文编号步骤，**禁止写实现代码**。
+    references/通用-样式规范-图表与卡片示例.md
 
-```text
-# ============ Controller（纯转发：无业务逻辑、不 try/catch）============
-AuthController
-├─ login(LoginDTO) → Response<LoginVO>                   # 登录 → AuthService.login(dto)
-├─ logout() → Response<Void>                             # 登出 → AuthService.logout()
-└─ changePassword(ChangePasswordDTO) → Response<Void>    # 自助改密 → AuthService.changePassword(dto)
+**首次写技术方案核心逻辑、或需要画图时读**；不画图时无需加载。
 
-# ============ Service（业务编排）============
-AuthServiceImpl
-├─ login(LoginDTO) → LoginVO
-│   # 1. 查用户 → sysUserMapper.selectByUsername(username)；不存在或密码不匹配 → 4001「用户名或密码错误」
-│   # 2. 校验用户状态；已禁用 → 4002「账号已被禁用」
-│   # 3. 签发 JWT → jwtTokenProvider.generate(userId, username)
-│   # 4. 组装返回 LoginVO
-└─ changePassword(ChangePasswordDTO) → void
-    # 1. 取当前 userId（防 IDOR）
-    # 2. 查用户 → sysUserMapper.selectById(userId)；校验旧密码；不匹配 → 4004「原密码错误」
-    # 3. 新密码加密 → sysUserMapper.updateById(user)，下次登录生效
+## 三、各产物速览框键名（统一格式，值按实际填）
 
-# ============ Mapper（数据访问，函数下附对应 SQL）============
-SysUserMapper
-├─ selectByUsername(String username) → SysUser           # 登录：按用户名查用户
-│   └─ SQL: SELECT * FROM sys_user WHERE username = #{username} AND deleted = 0
-└─ updateById(SysUser user) → int                        # 改密：更新密码
-    └─ SQL: UPDATE sys_user SET password = #{password}, update_time = NOW()
-            WHERE id = #{id} AND deleted = 0
-```
-
-**调用骨架规则**：
-
-- 用 `# ============ 层名（职责）============` 分块：入口层（Controller/Listener/Job）→ Service → Mapper
-- 函数行：`├─ 方法签名 → 返回类型`，行尾注释写**用途 + `→` 调用标注**（调用了下层的哪个方法）
-- **简单函数**：行尾注释说明做什么即可；**复杂函数**：函数体用 `│   # 1.` 中文编号步骤描述，调用关系用 `→ service.xxx()` / `→ mapper.xxx()` 标注
-- **Mapper 函数**：函数下缩进 `└─ SQL: ...` 内联对应 SQL（与"数据模型与 SQL"章节一一对应）
-- 纯中文业务描述，禁止写语句级实现代码；图后不需要另附"处理步骤"（骨架已含步骤）
-
-### 2.2 时序图（sequenceDiagram）——可选增强（复杂跨系统交互）
-
-> [!NOTE] 与调用骨架的关系
-> 调用骨架是核心逻辑的**必配主体**（分层 + 中文步骤已覆盖）；mermaid 时序图仅在**复杂跨系统交互**（多服务协作 / 外部依赖 / 时序敏感场景）时作为增强补充，不强制。若使用，配色走统一主题变量，图后步骤见调用骨架，不重复写。
-
-```mermaid
-%%{init: {'theme': 'base', 'themeVariables': {'actorBkg': '#EFF6FF', 'actorBorder': '#3B82F6', 'actorTextColor': '#1E3A8A', 'noteBkgColor': '#FEF9C3', 'noteBorderColor': '#EAB308', 'noteTextColor': '#713F12', 'signalColor': '#334155', 'signalTextColor': '#334155', 'labelBoxBkgColor': '#F1F5F9', 'labelBoxBorderColor': '#CBD5E1', 'labelTextColor': '#334155', 'loopTextColor': '#334155', 'lineColor': '#64748B'}}}%%
-sequenceDiagram
-    autonumber
-    participant C as 客户端
-    participant A as AuthController
-    participant S as AuthService
-    participant DB as MySQL
-    participant R as Redis
-
-    C->>A: POST /auth/login { username, password }
-    A->>S: login(username, password)
-    S->>DB: 按用户名查询 sys_user
-    alt 用户不存在
-        S-->>C: 1001 用户名或密码错误
-    else 校验通过
-        S-->>C: 200 { token, forceChange, menus }
-    end
-```
-
-**时序图规则**：
-- 第一行 init 主题变量**逐字使用上方配置**（统一配色，禁止自创颜色）
-- `autonumber` 自动编号；参与者别名用**中文业务名**（`C as 客户端`）
-- 用 `alt / else / end` 表达分支；`rect` 表达并行区（如需）
-- 关键消息写清路径与入参；响应消息标注状态码与关键字段
-- 图仅作增强，中文步骤以调用骨架为准
-
-### 2.3 流程图（flowchart）——可选增强（复杂决策 / 状态流转）
-
-> 复杂决策/状态流转可用流程图增强；简单流程不必画图（调用骨架已覆盖步骤）。
-
-```mermaid
-%%{init: {'theme': 'base', 'themeVariables': {'primaryColor': '#DBEAFE', 'primaryTextColor': '#1E3A8A', 'primaryBorderColor': '#3B82F6', 'lineColor': '#64748B', 'secondaryColor': '#FEF9C3', 'secondaryTextColor': '#713F12', 'secondaryBorderColor': '#EAB308', 'tertiaryColor': '#D1FAE5', 'tertiaryTextColor': '#065F46', 'tertiaryBorderColor': '#10B981', 'edgeLabelBackground': '#F8FAFC', 'fontFamily': '"Helvetica Neue", Arial, sans-serif'}}}%%
-flowchart TD
-    A["① 查该用户全部角色"]
-    B{"② 角色列表是否为空？"}
-    C["返回空数组 []"]
-    D{"③ 是否包含 admin 角色？"}
-    E["加载全部权限"]
-    F["按角色查权限（并集去重）"]
-    G["⑤ 构建树：parentId 递归组装"]
-
-    A --> B
-    B -->|"是"| C
-    B -->|"否"| D
-    D -->|"是（admin）"| E
-    D -->|"否"| F
-    E --> G
-    F --> G
-```
-
-**流程图规则**：
-- 第一行 init 主题变量**逐字使用上方配置**
-- 节点文字带 `① ② ③` 序号 + 中文描述，与「处理步骤」编号对应
-- 决策节点（菱形）用 `{"..."}`；分支标签写明判定条件（`|"是"|`）
-- 复杂分支图放「业务规则」小节；简单流程不必画图（避免过度）
-
-### 2.4 mermaid 渲染注意
-
-- **渲染器要求**：GitHub / GitLab / Obsidian / VSCode 均原生支持 mermaid，直接写代码块即可
-- **调用骨架是主体**：mermaid 图是可选增强；即使目标平台不支持 mermaid 渲染，方案也完整可读（中文步骤全在调用骨架里）
-- 图内禁止超长句子（一行 ≤ 40 字符），长描述放调用骨架步骤
-
----
-
-## 三、各产物速览表模板（直接套用）
-
-### 3.1 功能清单速览
+统一格式（所有产物一致，逐行 `> ` 包裹）：
 
 ```markdown
 > [!IMPORTANT] 文档速览
 >
 > | 项目 | 内容 |
 > | :--- | :--- |
-> | **模块** | 订单管理 |
-> | **功能项数** | 8（Controller 5 · Listener 1 · Job 2） |
-> | **优先级分布** | P1×6 · P2×2 |
-> | **依赖** | 见功能清单依赖列 |
+> | **<键名>** | <值> |
 ```
 
-### 3.2 澄清清单速览
+各产物**必含键名**（缺键 = 速览框不合格；值用实际内容，不写"待定"）：
 
-```markdown
-> [!IMPORTANT] 文档速览
->
-> | 项目 | 内容 |
-> | :--- | :--- |
-> | **澄清对象** | 订单管理功能清单 |
-> | **问题总数** | 8（已确认 5 · 待确认 3） |
-> | **阻塞项** | 2（见下方 🔲 项） |
-```
-
-### 3.3 需求质量核对速览（1.2 /req-gate）
-
-```markdown
-> [!IMPORTANT] 文档速览
->
-> | 项目 | 内容 |
-> | :--- | :--- |
-> | **模块** | 商品管理 |
-> | **需求分档** | B（有模糊，1.3 澄清补齐） |
-> | **验收基线** | 商品模块需求文档 V2.1（2026-08-20 版） |
-> | **回读核对** | 12 节（✅ 承接 10 · ⚠️ 遗漏 1 · 🔧 修正 1） |
-> | **矛盾项** | 2（全部 🔲 待 1.3 澄清） |
-> | **术语对齐** | 5 个（✅ 3 · 🔲 1 · 🔧 1） |
-```
-
-### 3.4 任务拆解速览
-
-```markdown
-> [!IMPORTANT] 文档速览
->
-> | 项目 | 内容 |
-> | :--- | :--- |
-> | **任务总数** | 9 |
-> | **Phase 分布** | 0×2 · 0.5×2 · 1×2 · 2×1 · 3×1 · 4×1 |
-> | **公共组件** | T003 XxxUtil / T004 AbstractXxx |
-```
-
-### 3.5 需求覆盖报告速览
-
-```markdown
-> [!IMPORTANT] 文档速览
->
-> | 项目 | 内容 |
-> | :--- | :--- |
-> | **功能** | 订单创建（US-001） |
-> | **需求点覆盖** | 8 需求点 · 7 已实现 / 1 未找到 |
-> | **反向核对** | 2 处"代码有、需求没要求"待确认 |
-> | **语义/行为项** | 3 项标"静态未验证"（未打 ✅） |
-> | **结论** | 有缺口 → 追加任务补齐 / 人工确认豁免 |
-```
+| 产物 | 必含键 |
+| :--- | :--- |
+| 1.1 功能清单 | 模块 · 功能项数（Controller/Listener/Job 分布）· 优先级分布 · 依赖 |
+| 1.3 澄清清单 | 澄清对象 · 问题总数（已勾选 / 待勾选）· 阻塞项（未定案不得进 `/design`） |
+| 1.2 需求质量核对 | 模块 · 需求分档 · 验收基线 · 回读核对（承接 / 遗漏 / 修正）· 矛盾项 · 术语对齐 |
+| 4.1 任务拆解 | 任务总数 · Phase 分布 · 公共组件 |
+| 5.3 需求覆盖报告 | 功能 · 需求点覆盖（已实现 / 未找到）· 反向核对 · 语义/行为项（标"静态未验证"）· 结论 |
 
 ---
 
@@ -297,6 +163,8 @@ flowchart TD
 | 自创配色 | `themeVariables` 乱改 | 逐字使用上方配置 |
 | callout 滥用 | 每段都套 IMPORTANT | 仅重要内容 |
 | 状态用文字 | 「已完成」 | `✅` |
+| 澄清题硬凑选项 | 每题都凑 4 个候选 | 有几条写几条（1~N） |
+| JSON 字段无逐字段注释（接口清单专有） | 只给裸 JSON，字段含义另放在文末表格里 | **每个字段行尾 `//` 逐字段注释**（含义 + 类型 + 必填性，字典补码、日期补格式）；嵌套对象/数组元素、失败示例的 `code`/`message` 等外层字段同样要注释 |
 
 ## 自检清单
 
@@ -306,5 +174,7 @@ flowchart TD
 - [ ] 技术方案核心逻辑含**调用骨架**：分层（入口 → Service → Mapper）+ `→` 调用标注 + 中文编号步骤 + Mapper 内联 SQL；不写实现代码
 - [ ] （可选）复杂跨系统交互 / 复杂决策含 mermaid 图（配色用统一主题变量，仅作增强）
 - [ ] 状态列用 emoji（✅ / ❌ / 🔲），不用文字混搭
+- [ ] 澄清清单（1.3）为**卡片式**：索引表 + 逐题卡片，候选答案按实际情况给（不硬凑条数）
 - [ ] 末尾完成标准自检逐条核对
 - [ ] 无超长表格 / 无自创配色 / 无 callout 滥用
+- [ ] （接口清单 `3.x.2` 专有）每个 JSON 的**每个字段**都有行尾逐字段注释（含嵌套元素与失败示例外层字段），机械核对输出 0；失败示例 `message` 为后端异常枚举原文（细则与自检命令见 `3.4-接口清单-前后端通用.md`）
