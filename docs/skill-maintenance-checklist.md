@@ -15,7 +15,7 @@
 - [ ] 归属技能是否唯一？是否与相邻技能规则冲突（先搜同名/同义规则，如"唯一索引"同时出现在 java-code-standards / database-standards，改动需同步两处）
 - [ ] **rule 可分三态**：硬规则（可 grep/ast-grep 判定）→ 必须配核对项（见 C）；软取向（判不了对错）→ 明确放"软取向/背景约定"层，不写进硬性约束与核对项；原则说明（方法论文档）→ 只改 docs，不进核对
 - [ ] 改动是否影响"存量适配模式"（0.5/2.1-存量适配）？老项目对齐场景是否要豁免或需同步表述
-- [ ] 若新增/改名模板：产物命名是否符合 ai-dev-workflow 命名规则（带流程编号/功能项序号/禁任务 ID 前缀），是否与 `skill/ai-dev-workflow/docs/流程总览.md` 模板索引一致
+- [ ] 若新增/改名模板：产物命名是否符合 ai-dev-workflow 命名规则（带流程编号/功能项序号/禁任务 ID 前缀），是否与 `skill/ai-dev-workflow/references/完整流程.md` 的「落盘规则」一致（**以该文件为准，不再以 `docs/流程总览.md` 为准**）
 
 ### B. 入口与触发
 - [ ] 是否涉及流程步骤（0.x/1.x~5.x）？是 → 同步：SKILL.md 命令表 + 步骤小节 + 落盘规则 + 命名规则 + 确认闸门清单 + `templates/通用-模块进度与断点.md` 步骤行 + README 命令表/流程图
@@ -23,8 +23,8 @@
 - [ ] 规范技能（非命令型）是否要在 ai-dev-workflow"配套规范 skill 触发矩阵"登记加载时机
 
 ### C. 核对兜底（check-standards）
-- [ ] **硬规则必配核对项**：新硬规则是否同步成 check-standards 核对项（33 项体系内新增/修改）？每项是否有可执行的 grep/ast-grep 判定指令？**无自动核对手段的规则=可能被静默跳过**
-- [ ] 核对项是否与 5.2/5.3 报告模板里的"关键规范落地核对表"（templates/5.3-需求覆盖报告.md）重复或需同步
+- [ ] **硬规则必配核对项**：新硬规则是否同步成 check-standards 核对项（44 项体系内新增/修改）？每项是否有可执行的 grep/ast-grep 判定指令？**无自动核对手段的规则=可能被静默跳过**
+- [ ] 核对项是否与 5.2 规范核对报告的核对项表重复或需同步（**规范核对结论以 5.2 报告为准**，不再汇总进 5.3 需求覆盖报告）
 
 ### D. 引用方与文档同步
 - [ ] java-code-standards 内部引用（comment/database/test/build 的引用路径、00-common 公共规范与 01-java 各规范）是否仍准确
@@ -39,6 +39,11 @@
 ## 2. 变更后：验收
 
 - [ ] **全仓引用一致性复查**：改后 `search_content` 关键词复查，确认无"漏网"旧表述
+- [ ] **体积审计**（改过任何 SKILL.md / 模板 / 规范 / commands 时必做）：跑
+
+      python3 scripts/audit-size.py
+
+  确认 ① 无绝对预算超限（退出码 0）② 无基线回涨报警（+5% 警告 / +20% 失败）。新增文件首次出现不报警，属正常增量；**优化类改动完成后跑 `--write-baseline` 刷新基线**，否则基线永久停留在旧值、后续小增量无法触发报警。判断"该不该瘦"看报告的「级联路径估算」——按一次任务实际读进上下文的量排优先级，不要只看单文件大小（SKILL.md 常驻成本只在触发时支付，模板与规范每次任务都付）
 - [ ] **frontmatter 机械校验**（改过任何 SKILL.md / commands `description` 时必做）：全部 SKILL.md + commands/*.md 跑一遍 YAML 解析（description 内半角冒号 `: ` 必须用引号包裹或全角冒号；Ruby `YAML.safe_load` / Python yaml 均可），并确认 description 长度 ≤1024 字符——防"改了触发词结果 frontmatter 解析失败 / 触发词被截断"
 - [ ] 变更说明：在 commit message 写清"改了哪些技能 / 为什么 / 核对项出处"，便于后人追溯（本仓库靠 commit 原子落地，一次变更一个 commit）
 - [ ] 对外发布影响：使用者的已装副本需重新 `./install.sh --force`（或按 docs/usage-zh.md 更新方式）才生效，README/usage-zh 的更新说明若涉及安装方式同步写清
@@ -48,7 +53,8 @@
 | 改动类型 | 必查位置（除规则自身技能外） |
 | :--- | :--- |
 | 改代码规范（java/comment/database/build/test） | check-standards 核对项 + 05-examples/04-templates + legacy-onboarding + ai-dev-workflow 触发矩阵 + README |
-| 改核对项（check-standards） | 33 项清单 + templates/5.3-需求覆盖报告.md 关键规范表 + 各规范技能对应章节 |
-| 改流程（ai-dev-workflow） | SKILL.md（命令表/步骤/落盘/命名/闸门）+ 模块进度模板 + README 流程图 + skill/ai-dev-workflow/docs/流程总览.md + commands/* |
+| 改核对项（check-standards） | `references/checklist.md`（判定标准单一事实源）+ `scripts/cs_checks.py` 的 `CHECK_GUIDE`（判据摘要）+ `scripts/README.md` 的 57 项表（脚本实现视角）+ 5.2 规范核对报告模板（`templates/5.1-编码指令.md` 的「关于关键规范核对」）+ 各规范技能对应章节——**四处任一不同步 = 模型按旧判据判定** |
+| 把内容移入 `references/`（瘦身） | 原文件留**一行指针 + 何时读**的说明；references 文件头写清用途与读取时机；确认无"见下方/如上表"类悬空交叉引用；接收方 SKILL.md 只写「按需读 `references/<file>`」，**禁止整篇内联**（否则失去瘦身意义） |
+| 改流程（ai-dev-workflow） | SKILL.md（入口/场景判定/方式三/硬性约束）+ `references/完整流程.md`（命令表/步骤/落盘/命名/闸门）+ 模块进度模板 + README 流程图 + commands/*；**`docs/流程总览.md` 无需同步**（人读方法论，已标「以真源为准」） |
 | 新增模板/命令 | SKILL.md 命令表 + README 命令表 + 模板索引 + 计数（全仓搜旧数字） |
 | 经验固化（experience → 规则） | 归属技能 + check-standards + 引用方 + experience 归档 |
