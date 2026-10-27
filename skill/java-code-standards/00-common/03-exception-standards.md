@@ -20,15 +20,28 @@ public class BaseException extends RuntimeException {
         this.code = code;
     }
 
+    public BaseException(String code, String message, Throwable cause) {
+        super(message, cause);
+        this.code = code;
+    }
+
     public String getCode() {
         return code;
     }
 }
 
-// 业务异常：业务规则不满足时抛出
+// 业务异常：业务规则不满足时抛出（构造器收 ErrorCode，禁止散落字符串错误码）
 public class BusinessException extends BaseException {
-    public BusinessException(String code, String message) {
-        super(code, message);
+    public BusinessException(ErrorCode errorCode) {
+        this(errorCode, errorCode.getDefaultMessage());
+    }
+
+    public BusinessException(ErrorCode errorCode, String message) {
+        super(errorCode.getCode(), message);
+    }
+
+    public BusinessException(ErrorCode errorCode, String message, Throwable cause) {
+        super(errorCode.getCode(), message, cause);
     }
 }
 
@@ -42,6 +55,7 @@ public class SystemException extends BaseException {
 
 - 所有自定义异常继承 `RuntimeException`，避免强制 checked 异常污染业务层
 - 错误码统一字符串常量，放常量类或枚举（见 constants/enum 规范）
+- **异常体系以本节为准**（两级：`BaseException` → `BusinessException` / `SystemException`）；`ErrorCode` 枚举定义与全局异常处理器实现见 `01-java/exception-standards.md` §2-3，**构造器签名两处必须一致**（收 `ErrorCode`，不收裸字符串 code）
 
 ### 2. 抛出原则
 

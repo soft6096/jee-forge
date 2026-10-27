@@ -15,7 +15,7 @@
 ### 2. 方法设计
 
 - 方法名用业务动词：`submitOrder`、`cancelOrder`、`queryPage`，不用 `doXxx`、`handleXxx`
-- **接口方法不写访问修饰词**（隐式 public，见命名规范 §8）：`PageResult<RoleVO> queryRoleList(...)`，禁止 `public PageResult<RoleVO> ...`
+- **接口方法不写访问修饰词**（隐式 public，见命名规范 §7）：`PageResult<RoleVO> queryRoleList(...)`，禁止 `public PageResult<RoleVO> ...`
 - **参数名 = 类型小驼峰或角色语义名**：`RoleSaveDTO roleSaveDTO`，禁止 `dto` / `query` / `e` 泛称
 - **返回集合的方法名以类型后缀结尾**：`getPermissionTreeList()`（返回 List）、`resolvePermCodeSet()`（返回 Set）
 - 参数用 DTO 聚合，避免长参数列表（> 3 个包装为 DTO）

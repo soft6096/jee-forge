@@ -57,6 +57,9 @@
 │   ├── ConfigTemplate.java
 │   └── ExceptionTemplate.java
 │
+├── assets/             # 工具配置（原创，配 Spotless 使用）
+│   └── eclipse-formatter.xml       # Eclipse JDT 格式化配置（4 空格/K&R/120）
+│
 └── 05-examples/        # 完整示例
     └── crud-example.md             # CRUD 完整示例
 ```
@@ -126,7 +129,3 @@ Apache 2.0 / CC-BY 3.0 / LGPL 均允许参考与再创作；本项目未引入�
 2. 复制 Apache 2.0 项目代码须保留其版权声明与 NOTICE 文件
 3. 复制 GPL/LGPL 代码须评估传染范围，默认禁止
 4. 参考某项目实现后重写，仍建议在注释注明思想来源
-
-## License
-
-MIT（覆盖本项目全部原创内容）

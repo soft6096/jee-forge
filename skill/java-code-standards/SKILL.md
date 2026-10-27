@@ -17,6 +17,7 @@ description: Java 代码生成规范引擎，约束 AI 生成代码质量（Spri
 - `00-common/*`（4 份）是唯一全量必读组；建议加载顺序：先 01-java 对应类规范（明确写什么），再 00-common（约束怎么写）
 - `04-templates/`：只读与当前生成类对应的**那一个**模板文件（如写 Service 实现只读 `ServiceImplTemplate.java`）——模板是骨架参考，不是必读全文
 - `05-examples/`（完整 CRUD 示例 321 行）：**仅首次搭建同类功能或不确定代码组织方式时读**，常规开发不加载
+- `assets/eclipse-formatter.xml`：团队格式化配置（Eclipse JDT profile），配合 Spotless 一键格式化；**编码时不读**，仅在生成项目脚手架 / 配置格式化时由 build-standards 引用
 - 一次编码会话叠加的规范总量应控制在 ~1500 行内；超出时优先保 `00-common` + 当前类规范，其余按矩阵延后
 
 ## 加载矩阵
@@ -49,28 +50,28 @@ description: Java 代码生成规范引擎，约束 AI 生成代码质量（Spri
 
 ## 核心规范速查
 
-### 命名（01-naming-standards.md）
-- 类 UpperCamelCase，接口无 `I` 前缀，实现类 `Impl` 后缀；**禁止单字母类名**（`R` 统一返回体类名反例）
-- 统一返回体固定为 `Response<T>`（code/message/data），放 `common.web`；分页用 `PageResult<T>`；禁止 `R` / `Result` / `ApiResponse`
-- **包结构：每种职责独立分包，同类不混放**——`controller` / `service` / `service.impl` / `mapper` / `domain`（实体）/ `dto`（入参）/ `vo`（出参）各归其包；DTO 与 VO 必须分属 `dto`、`vo` 两个独立包，严禁 VO 放 dto 包或 DTO 放 vo 包
-- 方法 lowerCamelCase 动词开头，分层前缀：Controller `get/create/update/delete`、Service `query/save/modify/remove`、Mapper `select/insert/update/delete`
-- 变量名 = `[来源/角色限定] + [领域词] + [类型后缀]`，2~3 个词表达业务语义：`LoginVO loginResult`、`SysUser existingUser`、`String accessToken`、`OrderQueryDTO orderQuery`
-- 变量命名反模式（命中即改）：单字母（`e`/`p`）、泛称简写（`vo`/`dto`/`data`/`obj`）、类型机械小驼峰（`User user`/`Token token`）、单单词泛指（`user`/`token`/`list`/`map`）、序号命名（`user1`/`data2`）、拼音
-- 同类型多变量用语义限定词区分：`cachedOrderVO`/`dbOrderVO`、`sourceOrderVO`/`targetOrderVO`、`accessToken`/`refreshToken`
-- 异常处理参数禁单字母 `e`：`@ExceptionHandler(ServiceException.class)` 用 `ServiceException serviceException`；`catch (Exception exception)`
-- 分页对象 `IPage<T> pageResult` / `Page<T> pageResult` 语义命名（非裸 `page`）；集合字段 `recordList`（非 `records`），统一 `xxxList`/`xxxSet`/`xxxMap`
-- 常量全大写 + 下划线
+> **命名 / 格式 / 异常 / 日志四节只列“最易错”的几条**——它们是 `00-common/*` 必读组的摘要，**完整规则以对应文件为准**（矩阵已要求加载，不要只看本节就写码）。
+> 其余小节（Service 实现 / 数据访问 / 工程配置 / 安全 / 分布式 / 性能）覆盖**不一定加载**的 `01-java` / `03-performance` 文件，保留相对完整的要点。
 
-### 异常（03-exception-standards.md）
-- 业务异常抛 `BusinessException(ErrorCode, message)`，错误码集中定义，禁止裸 `RuntimeException`
-- 禁止空 catch、吞异常；资源用 try-with-resources
-- Controller 不写 try/catch，全局处理器统一转换
+### 命名（00-common/01-naming-standards.md，必读）
+- 统一返回体固定为 `Response<T>`（code/message/data），分页 `PageResult<T>`；**禁 `R` / `Result` / `ApiResponse`**；DTO 与 VO 分属 `dto`、`vo` 两个独立包
+- 变量名 = `[来源/角色限定] + [领域词] + [类型后缀]`（`existingUser` / `accessToken` / `sourceOrderVO`）；反模式命中即改：单字母、泛称（`vo`/`dto`/`data`）、类型机械小驼峰（`User user`）、序号（`user1`）、拼音
+- 方法动词开头 + 分层前缀（Controller `get/create/update/delete`、Service `query/save/modify/remove`、Mapper `select/insert/update/delete`）；集合 `xxxList`/`xxxSet`/`xxxMap`
 
-### 日志（04-logging-standards.md）
-- SLF4J 占位符 `{}`，禁止字符串拼接与 System.out；全类 `@Slf4j`（Controller/Service/Job/Listener 一律带）
-- 异常日志带堆栈（最后参数传异常对象）
-- 关键日志带业务上下文 ID，禁敏感信息
-- **Logback 配置**：项目必须提供 `logback-spring.xml`（控制台 + 滚动文件 + 环境级 level 分离），禁止依赖默认配置裸奔（见 04-templates/logback-spring.xml）
+### 格式（00-common/05-code-format-standards.md，必读）
+- 4 空格、禁 Tab、行宽 ≤120、UTF-8/LF；import 禁通配符/未使用/重复
+- `if/for/while` 必带 `{}`；字符串比较用 `equals`（常量前置防 NPE）
+- 禁 `System.out`/`System.err`、禁 `e.printStackTrace()`；格式化走 Spotless（`mvn spotless:apply`）
+
+### 异常（00-common/03-exception-standards.md，必读）
+- 业务异常抛 `BusinessException(ErrorCode, message)`，错误码集中定义，禁裸 `RuntimeException`；体系为两级（`BaseException` → `BusinessException`/`SystemException`）
+- 禁空 catch / 吞异常；资源用 try-with-resources
+- Controller 不写 try/catch（全局处理器统一转换）
+
+### 日志（00-common/04-logging-standards.md，必读）
+- 全类 `@Slf4j` + 占位符 `{}`；**每个业务方法（含 private 抽取方法）方法体内 ≥1 条 INFO/WARN/ERROR，debug 不算**
+- 异常日志带堆栈（末参传异常对象）；关键日志带业务上下文 ID，禁敏感信息
+- 项目必须提供 `logback-spring.xml`（控制台 + 滚动文件 + 环境级 level），禁默认配置裸奔
 
 ### 注释（见 comment-standards skill）
 - 全量注释：所有类（DTO/VO/Config 等，仅示例非穷举）类注释写清职责、所有变量/字段注释写清含义

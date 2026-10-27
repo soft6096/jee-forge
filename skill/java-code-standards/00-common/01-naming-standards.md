@@ -202,7 +202,7 @@ List<RoleVO> queryRole(RoleQueryDTO roleQueryDTO);       // ❌ 未带 List 后�
 | 业务接口 | Service | `OrderService` |
 | 实现 | ServiceImpl | `OrderServiceImpl` |
 
-### 8. 接口方法修饰词（Service/Mapper 接口）
+### 7. 接口方法修饰词（Service/Mapper 接口）
 
 - **接口方法不写访问修饰词**（隐式 `public abstract`，Java 惯例，写 `public` 是冗余）
 - 反例：`public Response<Void> updateRole(...)`（接口内）
@@ -218,10 +218,17 @@ public interface RoleService {
 - 实现类方法写 `public`（类方法必须有访问修饰词）
 - `default` 仅接口默认方法使用；`private` 仅 Java 9+ 接口私有方法使用
 
-### 9. 缩写规则
+### 8. 缩写规则
 
 - 缩写视为单词：`getUserId` 而非 `getUserID`
 - 类名中：`UserIdDTO` 而非 `UserIDDTO`
+
+### 9. 泛型参数名
+
+- 泛型参数用**单个大写字母**，按语义约定：`T`（类型）/ `E`（元素）/ `K`（键）/ `V`（值）/ `R`（返回）
+- 反例：`Result<DataType>`、`Repository<Entity, IdType>`（用单词当泛型参数）
+- 正例：`Result<T>`、`Repository<T, ID>`、`PageResult<T>`、`Map<K, V>`
+- 缩写词连续大写不超过 3 个（`HttpRequest` 而非 `HTTPRequest`）；已约定俗成的缩写（`DAO` / `DTO` / `VO` / `SQL` / `URL` / `HTTP` / `JSON` / `XML` / `API` / `ID`）可整体大写
 
 ## 反例 / 正例
 
@@ -266,3 +273,4 @@ public class UserInfoController {
 - [ ] 常量全大写 + 下划线
 - [ ] DTO/VO/Entity 后缀正确
 - [ ] 无拼音命名
+- [ ] 泛型参数用单个大写字母（T/E/K/V/R），未用单词；缩写连续大写 ≤ 3

@@ -133,18 +133,18 @@ public class ProductVO {
         unmappedTargetPolicy = ReportingPolicy.ERROR)
 public interface ProductConverter {
 
-    ProductVO toVO(Product product);
+    ProductVO toVO(Product sourceProduct);
 
     Product toEntity(ProductCreateDTO createInfo);
 
-    List<ProductVO> toVOList(List<Product> products);
+    List<ProductVO> toVOList(List<Product> productList);
 
     @Mapping(target = "id", ignore = true)
     @Mapping(target = "createTime", ignore = true)
     @Mapping(target = "updateTime", ignore = true)
     @Mapping(target = "deleted", ignore = true)
     @Mapping(target = "version", ignore = true)
-    void updateEntity(ProductUpdateDTO updateInfo, @MappingTarget Product product);
+    void updateEntity(ProductUpdateDTO updateInfo, @MappingTarget Product targetProduct);
 }
 ```
 
@@ -185,38 +185,38 @@ public class ProductServiceImpl implements ProductService {
     @Override
     @Transactional(rollbackFor = Exception.class)
     public Long create(ProductCreateDTO createInfo) {
-        Product product = productConverter.toEntity(createInfo);
-        product.setProductNo(buildProductNo());
-        productMapper.insert(product);
-        log.info("product created, id={}, productNo={}", product.getId(), product.getProductNo());
-        return product.getId();
+        Product newProduct = productConverter.toEntity(createInfo);
+        newProduct.setProductNo(buildProductNo());
+        productMapper.insert(newProduct);
+        log.info("product created, id={}, productNo={}", newProduct.getId(), newProduct.getProductNo());
+        return newProduct.getId();
     }
 
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void update(Long id, ProductUpdateDTO updateInfo) {
-        Product product = getEntityOrThrow(id);
-        productConverter.updateEntity(updateInfo, product);
-        productMapper.updateById(product);
+        Product existingProduct = getEntityOrThrow(id);
+        productConverter.updateEntity(updateInfo, existingProduct);
+        productMapper.updateById(existingProduct);
         log.info("product updated, id={}", id);
     }
 
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void delete(Long id) {
-        Product product = getEntityOrThrow(id);
-        productMapper.deleteById(product.getId());
+        Product existingProduct = getEntityOrThrow(id);
+        productMapper.deleteById(existingProduct.getId());
         log.info("product deleted, id={}", id);
     }
 
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void deductStock(Long id, Integer delta) {
-        Product product = getEntityOrThrow(id);
+        Product existingProduct = getEntityOrThrow(id);
         // 乐观锁条件更新：version 不匹配则影响行数为 0
         int rows = productMapper.update(null, new LambdaUpdateWrapper<Product>()
                 .eq(Product::getId, id)
-                .eq(Product::getVersion, product.getVersion())
+                .eq(Product::getVersion, existingProduct.getVersion())
                 .ge(Product::getStock, delta)
                 .setSql("stock = stock - " + delta)
                 .setSql("version = version + 1"));
@@ -227,11 +227,11 @@ public class ProductServiceImpl implements ProductService {
     }
 
     private Product getEntityOrThrow(Long id) {
-        Product product = productMapper.selectById(id);
-        if (product == null) {
+        Product existingProduct = productMapper.selectById(id);
+        if (existingProduct == null) {
             throw new BusinessException(ErrorCode.PRODUCT_NOT_FOUND, "商品不存在或已删除");
         }
-        return product;
+        return existingProduct;
     }
 
     private String buildProductNo() {

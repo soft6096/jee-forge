@@ -51,6 +51,8 @@ public enum ErrorCode {
 
 ### 3. 构造器设计
 
+> **继承层级以 `00-common/03-exception-standards.md` §1 为准**：项目建了 `BaseException` 两级结构时，本类改为 `extends BaseException`，**构造器签名不变**（收 `ErrorCode`）；下方最小实现供未建 BaseException 的项目参考。
+
 - 至少提供：`(ErrorCode)`、`(ErrorCode, message)`、`(ErrorCode, message, Throwable)`
 - message 缺省用 ErrorCode 默认文案，可覆盖为动态细节
 

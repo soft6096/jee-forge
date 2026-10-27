@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!--
+  jee-forge 团队 Java 代码格式配置（Eclipse JDT Formatter Profile）
+  ============================================================
+  本文件为原创整理；仅包含功能性格式化参数键值，
+  未复制任何第三方受版权文件。格式化引擎（Eclipse JDT）与执行器（Spotless）
+  不随本仓分发，由构建工具按需拉取。
+
+  对齐口径：4 空格缩进 / K&R 花括号 / 120 列 / 保留最多 1 个连续空行 /
+           文件末尾补空行。
+
+  用法：配合 Spotless（Apache-2.0）——java { eclipse().configFile(".../assets/eclipse-formatter.xml") }
+       提交前或 CI 执行 mvn spotless:apply（自动修）/ mvn spotless:check（校验）。
+
+  说明：未列出的项沿用 Eclipse 默认值；`profiles version` 需与本机 Eclipse/Spotless 兼容。
+-->
+<profiles version="21">
+    <profile kind="CodeFormatterProfile" name="jee-forge" version="21">
+
+        <!-- 缩进：4 空格，续行缩进 8（2 级） -->
+        <setting id="org.eclipse.jdt.core.formatter.tabulation.char" value="space"/>
+        <setting id="org.eclipse.jdt.core.formatter.tabulation.size" value="4"/>
+        <setting id="org.eclipse.jdt.core.formatter.indentation.size" value="4"/>
+        <setting id="org.eclipse.jdt.core.formatter.continuation_indentation" value="2"/>
+        <setting id="org.eclipse.jdt.core.formatter.continuation_indentation_for_array_initializer" value="2"/>
+        <setting id="org.eclipse.jdt.core.formatter.indent_empty_lines" value="false"/>
+
+        <!-- 行宽 120 -->
+        <setting id="org.eclipse.jdt.core.formatter.lineSplit" value="120"/>
+        <setting id="org.eclipse.jdt.core.formatter.comment.line_length" value="120"/>
+
+        <!-- 空行：最多保留 1 个连续空行 -->
+        <setting id="org.eclipse.jdt.core.formatter.number_of_empty_lines_to_preserve" value="1"/>
+        <setting id="org.eclipse.jdt.core.formatter.join_wrapped_lines" value="true"/>
+        <setting id="org.eclipse.jdt.core.formatter.insert_new_line_at_end_of_file_if_missing" value="insert"/>
+
+        <!-- 花括号：K&R（左括号行尾，} else / } catch / } finally 同行） -->
+        <setting id="org.eclipse.jdt.core.formatter.brace_position_for_type_declaration" value="end_of_line"/>
+        <setting id="org.eclipse.jdt.core.formatter.brace_position_for_method_declaration" value="end_of_line"/>
+        <setting id="org.eclipse.jdt.core.formatter.brace_position_for_constructor_declaration" value="end_of_line"/>
+        <setting id="org.eclipse.jdt.core.formatter.brace_position_for_block" value="end_of_line"/>
+        <setting id="org.eclipse.jdt.core.formatter.brace_position_for_switch" value="end_of_line"/>
+        <setting id="org.eclipse.jdt.core.formatter.brace_position_for_array_initializer" value="end_of_line"/>
+        <setting id="org.eclipse.jdt.core.formatter.insert_new_line_before_else_in_if_statement" value="do not insert"/>
+        <setting id="org.eclipse.jdt.core.formatter.insert_new_line_before_catch_in_try_statement" value="do not insert"/>
+        <setting id="org.eclipse.jdt.core.formatter.insert_new_line_before_finally_in_try_statement" value="do not insert"/>
+        <setting id="org.eclipse.jdt.core.formatter.insert_new_line_before_while_in_do_statement" value="do not insert"/>
+
+        <!-- 方法之间空 1 行 -->
+        <setting id="org.eclipse.jdt.core.formatter.blank_lines_before_method" value="1"/>
+        <setting id="org.eclipse.jdt.core.formatter.blank_lines_before_new_chunk" value="1"/>
+        <setting id="org.eclipse.jdt.core.formatter.blank_lines_before_first_class_body_declaration" value="1"/>
+        <setting id="org.eclipse.jdt.core.formatter.blank_lines_before_field" value="0"/>
+
+    </profile>
+</profiles>

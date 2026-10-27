@@ -31,11 +31,16 @@
 | baomidou/mybatis-plus | Apache 2.0 | 公开 API 使用 | API 功能性使用不受限 |
 | mybatis/mybatis-3 | Apache 2.0 | 公开 API 使用 | API 功能性使用不受限 |
 | SonarSource/sonar-java | LGPL 3.0 | 质量规则思想 | 未复制代码，无 LGPL 传染 |
+| checkstyle/checkstyle | LGPL 2.1 | 参考规则思想（编码规范的规则名与判定口径） | 未复制其代码/文档/发行物；规则文本为原创中文表述 |
+| diffplug/spotless | Apache 2.0 | 构建期格式化工具（用户项目侧引入，本仓不打包） | 未随仓分发其代码，无保留义务 |
+| eclipse-jdt formatter | EPL | 格式化引擎（经 Spotless 构建期拉取，本仓不打包） | 未随仓分发其引擎代码 |
+
+> **指名性使用声明**：本文及本仓库内容中提及的第三方项目 / 工具名称（如 Checkstyle、Spotless、Eclipse、SpotBugs、Sonar、Spring、MyBatis 等）**仅用于指名性说明与许可署名**，**不代表任何赞助、背书或关联**；相关名称与商标归其各自所有者。
 
 **关键结论**：
 - 未复制任何开源项目的代码或受保护文本 → 未触发任何开源许可的再分发义务
 - 未引入 GPL 代码 → 无 copyleft 传染风险
-- 本项目以 MIT 许可发布，覆盖其原创内容
+- **本仓不含任何外部工具的可执行文件/二进制**（Checkstyle / SpotBugs / Eclipse 引擎等 jar 均不打包）；`assets/eclipse-formatter.xml` 为**原创手写**配置
 
 ## 3. 受限源清单（禁止引用）
 
@@ -65,5 +70,11 @@
 | 翻译痕迹检查（大段英文文本） | 无（仅 SQL/DDL 上下文） | 2026-08-16 |
 | 「复制自/摘自/来源」引用标记扫描 | 无 | 2026-08-16 |
 | 开源代码整段复制检查 | 无（全部原创示例） | 2026-08-16 |
+| 格式规则（对齐 Checkstyle 10.x）与 Eclipse formatter 配置原创性核查 | 无引用受版权文本；配置为原创手写；未打包任何工具 jar | 2026-09-13 |
+| 脚本衍生作品核查（`check-standards/scripts/*.py`、`test-workflow/assets/runner/runner.py`） | 独立实现（无上游许可证头/标识符/结构，无逐字翻译） | 2026-09-13 |
+| check-standards 规则口径来源署名补充 + runner.py 复核 | `cs_checks.py` 头部补来源署名（#34~#43 仅对齐 Checkstyle 10.x 规则口径，未复制代码/文档/发行物）；`runner.py` 复核仍为独立实现，无新增引用 | 2026-09-14 |
+| check-standards 扩展至 57 项（新增 #50~#57）+ #1/#37/#38/#39/#40/#41/#43/#45 口径升级 | 新增与升级项均为**原创 Python 实现**，仅「规则口径」参考 Checkstyle 10.x 规则名；口径经真实检查工具在本项目代码上实测逐条校准（探针比对），**未引入 Checkstyle 工具或其任何 jar/配置/文档**（符合 §4 第 5 条「GPL/LGPL 拒绝」）；规则中文名、注释文案、实现结构均为自拟原创 | 2026-09-16 |
+| check-standards 误报治理（作用域收敛 / 语法自适应 / 命名与空格修正） | 全部为**原创实现**：资源类文件按 `--path` 收敛（`--resources-scope auto/path/project`）；`#11` 支持 PostgreSQL `COMMENT ON` 并跳过跨行 `CHECK` 约束体；`#26` 白名单判定改为去注释后匹配且不报纯接口声明；`#38` 排除自增自减与关键字后单目符号；`#44` 声明正则要求类型与变量名间有空白。未引入、未复制任何受版权内容或第三方工具 | 2026-09-16 |
+| check-standards 子项补强（`#39` 方法名禁单字母 / `#57` 补 `}` 与 `else`·`catch`·`finally` 同行 / `#45` 补续行·case·数组初始化缩进候选） | 新增子项均为**原创 Python 实现**，仅「规则口径」参考 Checkstyle 10.x（`MethodName`、`Indentation`、`RightCurly` 的规则名与判定口径）；其中 `#45` 的**缩进方向与期望值**（续行只报「不足」、`case` 严格多/少都报、数组初始化期望为一组 +4/+8）另经**外部真实 Checkstyle 10.20.2 + 外部 `rules/checkstyle.xml` 探针实测校准**（其中「枚举常量参数折行不参与续行缩进判定」同一并实测确认）；**未引入 Checkstyle 工具或其任何 jar/配置/文档**，未复制其代码或文档文本 | 2026-09-16 |
 
 > 2026-08-16 自查覆盖新增内容：security/listener/job/api-doc/distributed 五份规范 + 版本化/监控指标/错误码分段补充。后续内容变更后，重新执行上表自查并更新记录。
